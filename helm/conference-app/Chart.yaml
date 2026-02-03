@@ -1,0 +1,9 @@
+apiVersion: v2
+name: conference-app
+description: Conference polling application for SREDay demo
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: SREDay Demo
+    email: demo@example.com

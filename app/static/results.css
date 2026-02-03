@@ -1,0 +1,325 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --taxi-yellow: #FFD700;
+    --nyc-black: #1a1a1a;
+    --neon-green: #39FF14;
+    --neon-pink: #FF1493;
+    --neon-blue: #00BFFF;
+    --neon-orange: #FF6B35;
+    --brick-red: #8B4513;
+    --subway-white: #f5f5f5;
+}
+
+body {
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+    min-height: 100vh;
+    color: var(--subway-white);
+    position: relative;
+    overflow: hidden;
+}
+
+.brick-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 58px,
+            rgba(139, 69, 19, 0.15) 58px,
+            rgba(139, 69, 19, 0.15) 60px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 118px,
+            rgba(139, 69, 19, 0.1) 118px,
+            rgba(139, 69, 19, 0.1) 120px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 30px 50px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    margin-bottom: 30px;
+}
+
+.taxi-stripe-top {
+    height: 12px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--taxi-yellow),
+        var(--taxi-yellow) 40px,
+        var(--nyc-black) 40px,
+        var(--nyc-black) 80px
+    );
+    margin-bottom: 20px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.subway-lines {
+    display: flex;
+    gap: 10px;
+}
+
+.line {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.line-a { background: #0039A6; }
+.line-1 { background: #EE352E; }
+.line-7 { background: #B933AD; }
+
+.title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 5rem;
+    color: var(--taxi-yellow);
+    text-shadow:
+        4px 4px 0 var(--neon-pink),
+        -2px -2px 0 var(--neon-green),
+        0 0 30px rgba(255, 215, 0, 0.5);
+    letter-spacing: 4px;
+    animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    from { text-shadow: 4px 4px 0 var(--neon-pink), -2px -2px 0 var(--neon-green), 0 0 30px rgba(255, 215, 0, 0.5); }
+    to { text-shadow: 4px 4px 0 var(--neon-pink), -2px -2px 0 var(--neon-green), 0 0 50px rgba(255, 215, 0, 0.8); }
+}
+
+.badge {
+    background: var(--taxi-yellow);
+    color: var(--nyc-black);
+    padding: 15px 25px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge .heart {
+    color: #EE352E;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.question-banner {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.neon-border {
+    height: 4px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--neon-green) 20%,
+        var(--neon-pink) 50%,
+        var(--neon-green) 80%,
+        transparent 100%);
+    box-shadow: 0 0 15px var(--neon-green);
+}
+
+.question {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    padding: 25px;
+    color: var(--subway-white);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.results-grid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 20px 0;
+}
+
+.result-row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 20px 30px;
+    background: linear-gradient(90deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.7));
+    border-left: 6px solid var(--taxi-yellow);
+    transition: all 0.3s ease;
+}
+
+.result-label {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 450px;
+}
+
+.result-icon {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--neon-green);
+    min-width: 80px;
+    text-align: center;
+    text-shadow: 0 0 10px var(--neon-green);
+}
+
+.result-text {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--subway-white);
+}
+
+.bar-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    transition: width 0.5s ease-out;
+    position: relative;
+}
+
+.bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, 0.3) 0%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.2) 100%);
+}
+
+.bar-yellow {
+    background: linear-gradient(90deg, var(--taxi-yellow), #FFA500);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+.bar-pink {
+    background: linear-gradient(90deg, var(--neon-pink), #FF69B4);
+    box-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+}
+
+.bar-green {
+    background: linear-gradient(90deg, var(--neon-green), #32CD32);
+    box-shadow: 0 0 30px rgba(57, 255, 20, 0.5);
+}
+
+.bar-blue {
+    background: linear-gradient(90deg, var(--neon-blue), #1E90FF);
+    box-shadow: 0 0 30px rgba(0, 191, 255, 0.5);
+}
+
+.bar-orange {
+    background: linear-gradient(90deg, var(--neon-orange), #FF4500);
+    box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+}
+
+.bar-count {
+    position: absolute;
+    right: 20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--subway-white);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.footer {
+    margin-top: auto;
+    padding-top: 30px;
+}
+
+.total-votes {
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--taxi-yellow);
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.total-votes span {
+    font-size: 4rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 30px var(--neon-green);
+}
+
+.taxi-stripe-bottom {
+    height: 12px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--taxi-yellow),
+        var(--taxi-yellow) 40px,
+        var(--nyc-black) 40px,
+        var(--nyc-black) 80px
+    );
+}
+
+@media (max-width: 1200px) {
+    .title {
+        font-size: 3.5rem;
+    }
+
+    .question {
+        font-size: 2rem;
+    }
+
+    .result-label {
+        min-width: 300px;
+    }
+
+    .result-text {
+        font-size: 1.1rem;
+    }
+}

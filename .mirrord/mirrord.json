@@ -1,0 +1,13 @@
+{
+  "target": {
+    "path": "deployment/vote-api",
+    "namespace": "conference-app"
+  },
+  "feature": {
+    "network": {
+      "incoming": "steal"
+    },
+    "env": true,
+    "fs": "read"
+  }
+}

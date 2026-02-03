@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Results - NYC Poll '96</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/results.css">
+</head>
+<body>
+    <div class="brick-overlay"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="taxi-stripe-top"></div>
+            <div class="header-content">
+                <div class="subway-lines">
+                    <span class="line line-a">A</span>
+                    <span class="line line-1">1</span>
+                    <span class="line line-7">7</span>
+                </div>
+                <h1 class="title">LIVE RESULTS</h1>
+                <div class="badge">
+                    <span>I</span>
+                    <span class="heart">&#9829;</span>
+                    <span>DEBUG</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="question-banner">
+            <div class="neon-border"></div>
+            <h2 class="question">What's your go-to debugging strategy?</h2>
+            <div class="neon-border"></div>
+        </div>
+
+        <main class="results-grid" id="results">
+            <div class="result-row" data-choice="print">
+                <div class="result-label">
+                    <span class="result-icon">></span>
+                    <span class="result-text">Add more print statements</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar bar-yellow" style="width: 0%"></div>
+                    <span class="bar-count">0</span>
+                </div>
+            </div>
+
+            <div class="result-row" data-choice="stare">
+                <div class="result-label">
+                    <span class="result-icon">@_@</span>
+                    <span class="result-text">Stare at the code until it confesses</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar bar-pink" style="width: 0%"></div>
+                    <span class="bar-count">0</span>
+                </div>
+            </div>
+
+            <div class="result-row" data-choice="ai">
+                <div class="result-label">
+                    <span class="result-icon">[AI]</span>
+                    <span class="result-text">Ask an AI to explain it</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar bar-green" style="width: 0%"></div>
+                    <span class="bar-count">0</span>
+                </div>
+            </div>
+
+            <div class="result-row" data-choice="revert">
+                <div class="result-label">
+                    <span class="result-icon"><<</span>
+                    <span class="result-text">Revert and pretend it never happened</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar bar-blue" style="width: 0%"></div>
+                    <span class="bar-count">0</span>
+                </div>
+            </div>
+
+            <div class="result-row" data-choice="restart">
+                <div class="result-label">
+                    <span class="result-icon">PWR</span>
+                    <span class="result-text">Turn it off and on again</span>
+                </div>
+                <div class="bar-container">
+                    <div class="bar bar-orange" style="width: 0%"></div>
+                    <span class="bar-count">0</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="total-votes">
+                TOTAL VOTES: <span id="total-count">0</span>
+            </div>
+            <div class="taxi-stripe-bottom"></div>
+        </footer>
+    </div>
+
+    <script src="/static/results.js"></script>
+</body>
+</html>

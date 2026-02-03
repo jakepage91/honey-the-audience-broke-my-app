@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.prometheus.scrapeInterval }}
+      evaluation_interval: {{ .Values.prometheus.scrapeInterval }}
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+
+    scrape_configs:
+      - job_name: 'vote-api'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.namespace }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: vote-api
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_ip]
+            target_label: __address__
+            replacement: ${1}:8000
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+        metrics_path: /metrics
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: prometheus
+data:
+  alerts.yml: |
+    groups:
+      - name: vote-api-alerts
+        rules:
+          - alert: VoteAPIErrorRateHigh
+            expr: >
+              (
+                sum(rate(http_requests_total{status="500"}[1m]))
+                /
+                sum(rate(http_requests_total[1m]))
+              ) > 0.5
+            for: 30s
+            labels:
+              severity: critical
+              app: vote-api
+            annotations:
+              summary: "vote-api error rate above 50%"
+              description: "{{ "{{" }} $value | humanizePercentage {{ "}}" }} of requests returning 500. Check database connectivity."
+
+          - alert: VoteAPIHighLatency
+            expr: >
+              histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+              > 2
+            for: 1m
+            labels:
+              severity: warning
+              app: vote-api
+            annotations:
+              summary: "vote-api p95 latency above 2 seconds"
+              description: "P95 latency is {{ "{{" }} $value | humanizeDuration {{ "}}" }}"
+
+          - alert: DatabasePoolExhausted
+            expr: db_pool_checked_out >= db_pool_size
+            for: 30s
+            labels:
+              severity: critical
+              app: vote-api
+            annotations:
+              summary: "Database connection pool exhausted"
+              description: "All database connections are in use. This may indicate a connection leak."

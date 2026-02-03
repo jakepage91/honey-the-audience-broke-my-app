@@ -1,0 +1,94 @@
+namespace: conference-app
+
+voteApi:
+  replicaCount: 2
+  image:
+    repository: your-registry/vote-api  # REPLACE BEFORE DEPLOYING
+    tag: "v1.0.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+  dbPoolSize: 5
+  dbMaxOverflow: 0
+
+redis:
+  image:
+    repository: redis
+    tag: "7.4.2-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+
+postgresql:
+  image:
+    repository: postgres
+    tag: "16.6-alpine"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  statementTimeout: "3s"
+  seedData: true
+  storage:
+    size: 10Gi
+    storageClassName: ""  # Use default storage class
+
+prometheus:
+  image:
+    repository: prom/prometheus
+    tag: "v2.54.1"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  scrapeInterval: "5s"
+
+alertmanager:
+  image:
+    repository: prom/alertmanager
+    tag: "v0.27.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "128Mi"
+  slackChannel: "#sre-alerts"
+
+ingress:
+  enabled: true
+  className: nginx
+  host: honey-we-have-a-problem.freeddns.org
+  tls:
+    enabled: false
+    secretName: poll-tls
+
+secrets:
+  postgresql:
+    username: postgres
+    password: changeme-postgres-password  # REPLACE BEFORE DEPLOYING
+    database: conference
+  redis:
+    password: ""  # Leave empty to disable Redis auth
+  slack:
+    webhookUrl: ""  # REPLACE BEFORE DEPLOYING - get from Slack app settings

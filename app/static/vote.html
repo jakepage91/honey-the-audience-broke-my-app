@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Poll '96</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Permanent+Marker&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/vote.css">
+</head>
+<body>
+    <div class="brick-overlay"></div>
+
+    <div class="container">
+        <header class="header">
+            <div class="taxi-stripe"></div>
+            <div class="title-wrapper">
+                <h1 class="title">NYC POLL '96</h1>
+                <div class="subway-badge">
+                    <span class="line line-a">A</span>
+                    <span class="line line-1">1</span>
+                    <span class="line line-7">7</span>
+                </div>
+            </div>
+            <div class="taxi-stripe"></div>
+        </header>
+
+        <main class="main-content">
+            <div class="question-card">
+                <div class="staple staple-left"></div>
+                <div class="staple staple-right"></div>
+                <h2 class="question">What's your go-to debugging strategy?</h2>
+                <p class="subtitle">TAP TO VOTE</p>
+            </div>
+
+            <div class="options" id="options">
+                <button class="option-btn" data-choice="print">
+                    <span class="option-icon">></span>
+                    <span class="option-text">Add more print statements</span>
+                </button>
+                <button class="option-btn" data-choice="stare">
+                    <span class="option-icon">@_@</span>
+                    <span class="option-text">Stare at the code until it confesses</span>
+                </button>
+                <button class="option-btn" data-choice="ai">
+                    <span class="option-icon">[AI]</span>
+                    <span class="option-text">Ask an AI to explain it</span>
+                </button>
+                <button class="option-btn" data-choice="revert">
+                    <span class="option-icon"><<</span>
+                    <span class="option-text">Revert and pretend it never happened</span>
+                </button>
+                <button class="option-btn" data-choice="restart">
+                    <span class="option-icon">PWR</span>
+                    <span class="option-text">Turn it off and on again</span>
+                </button>
+            </div>
+
+            <div class="confirmation" id="confirmation" style="display: none;">
+                <div class="confirm-card">
+                    <div class="neon-text">VOTE RECORDED!</div>
+                    <p class="confirm-choice" id="confirm-choice"></p>
+                    <div class="pizza-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <path d="M50 10 L90 90 L10 90 Z" fill="#FFD700" stroke="#000" stroke-width="3"/>
+                            <circle cx="40" cy="60" r="8" fill="#D2691E"/>
+                            <circle cx="60" cy="55" r="8" fill="#D2691E"/>
+                            <circle cx="50" cy="75" r="8" fill="#D2691E"/>
+                        </svg>
+                    </div>
+                    <p class="thanks">Thanks for voting, yo!</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <span class="heart-nyc">I <span class="heart">&#9829;</span> DEBUGGING</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/vote.js"></script>
+</body>
+</html>

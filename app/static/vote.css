@@ -1,0 +1,318 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --taxi-yellow: #FFD700;
+    --nyc-black: #1a1a1a;
+    --neon-green: #39FF14;
+    --neon-pink: #FF1493;
+    --brick-red: #8B4513;
+    --subway-white: #f5f5f5;
+    --graffiti-blue: #4169E1;
+}
+
+body {
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    min-height: 100vh;
+    color: var(--subway-white);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.brick-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 48px,
+            rgba(139, 69, 19, 0.3) 48px,
+            rgba(139, 69, 19, 0.3) 50px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 98px,
+            rgba(139, 69, 19, 0.2) 98px,
+            rgba(139, 69, 19, 0.2) 100px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.taxi-stripe {
+    height: 8px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--taxi-yellow),
+        var(--taxi-yellow) 20px,
+        var(--nyc-black) 20px,
+        var(--nyc-black) 40px
+    );
+    border-radius: 2px;
+}
+
+.title-wrapper {
+    padding: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.title {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 2.5rem;
+    color: var(--taxi-yellow);
+    text-shadow:
+        3px 3px 0 var(--neon-pink),
+        -1px -1px 0 var(--neon-green);
+    letter-spacing: 2px;
+}
+
+.subway-badge {
+    display: flex;
+    gap: 5px;
+}
+
+.line {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+}
+
+.line-a { background: #0039A6; }
+.line-1 { background: #EE352E; }
+.line-7 { background: #B933AD; }
+
+.main-content {
+    flex: 1;
+}
+
+.question-card {
+    background: var(--subway-white);
+    color: var(--nyc-black);
+    padding: 25px 20px;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 20px;
+    transform: rotate(-1deg);
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+}
+
+.staple {
+    position: absolute;
+    top: 10px;
+    width: 20px;
+    height: 4px;
+    background: linear-gradient(to bottom, #888, #aaa, #888);
+    border-radius: 1px;
+}
+
+.staple-left { left: 15px; transform: rotate(-5deg); }
+.staple-right { right: 15px; transform: rotate(5deg); }
+
+.question {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    margin-bottom: 10px;
+    color: var(--nyc-black);
+}
+
+.subtitle {
+    font-size: 0.8rem;
+    color: #666;
+    letter-spacing: 3px;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px 20px;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 3px solid var(--taxi-yellow);
+    border-radius: 4px;
+    color: var(--subway-white);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.option-btn:hover {
+    background: var(--taxi-yellow);
+    color: var(--nyc-black);
+    transform: translateX(5px);
+    box-shadow: -5px 5px 0 var(--neon-pink);
+}
+
+.option-btn:active {
+    transform: translateX(5px) scale(0.98);
+}
+
+.option-icon {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    min-width: 50px;
+    text-align: center;
+    color: var(--neon-green);
+}
+
+.option-btn:hover .option-icon {
+    color: var(--nyc-black);
+}
+
+.option-text {
+    flex: 1;
+}
+
+.confirmation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.confirm-card {
+    background: var(--nyc-black);
+    border: 4px solid var(--taxi-yellow);
+    padding: 40px;
+    text-align: center;
+    max-width: 350px;
+    animation: popIn 0.3s ease-out;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.neon-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    color: var(--neon-green);
+    text-shadow:
+        0 0 10px var(--neon-green),
+        0 0 20px var(--neon-green),
+        0 0 30px var(--neon-green);
+    margin-bottom: 20px;
+    animation: flicker 2s infinite;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+    52% { opacity: 1; }
+    54% { opacity: 0.9; }
+}
+
+.confirm-choice {
+    font-size: 1.1rem;
+    color: var(--subway-white);
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255, 215, 0, 0.1);
+    border-left: 4px solid var(--taxi-yellow);
+}
+
+.pizza-icon {
+    margin: 20px 0;
+}
+
+.thanks {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 1.3rem;
+    color: var(--neon-pink);
+}
+
+.footer {
+    margin-top: auto;
+    padding-top: 20px;
+    text-align: center;
+}
+
+.footer-content {
+    padding: 15px;
+    background: var(--taxi-yellow);
+    color: var(--nyc-black);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+}
+
+.heart {
+    color: #EE352E;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@media (max-width: 400px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .question {
+        font-size: 1.4rem;
+    }
+
+    .option-btn {
+        padding: 15px;
+        font-size: 0.85rem;
+    }
+
+    .option-icon {
+        min-width: 40px;
+        font-size: 1rem;
+    }
+}
