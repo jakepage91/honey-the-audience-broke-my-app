@@ -5,17 +5,16 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
-from app.database import engine, Base
-from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size
+from app.database import Base, engine
+from app.metrics import MetricsMiddleware, db_pool_checked_out, db_pool_size, get_metrics_response
 from app.models import Vote
-from app.redis_client import increment_vote, get_vote_counts, redis_client
+from app.redis_client import get_vote_counts, increment_vote, redis_client
 from app.referral import validate_referral
-
 
 VALID_CHOICES = [
     "print",
