@@ -1,6 +1,4 @@
-import pytest
-from unittest.mock import patch, MagicMock
-from sqlalchemy.exc import OperationalError
+from unittest.mock import MagicMock, patch
 
 
 class TestReferralValidation:
