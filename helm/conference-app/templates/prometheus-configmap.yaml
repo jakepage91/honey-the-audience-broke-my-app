@@ -81,10 +81,20 @@ data:
 
           - alert: DatabasePoolExhausted
             expr: db_pool_checked_out >= db_pool_size
-            for: 30s
+            for: 5s
             labels:
               severity: critical
               app: vote-api
             annotations:
               summary: "Database connection pool exhausted"
               description: "All database connections are in use. This may indicate a connection leak."
+
+          - alert: VoteAPIDown
+            expr: up{job="vote-api"} == 0
+            for: 10s
+            labels:
+              severity: critical
+              app: vote-api
+            annotations:
+              summary: "vote-api is unreachable"
+              description: "Prometheus cannot scrape vote-api - the app is likely hung due to connection pool exhaustion."
