@@ -64,7 +64,8 @@ cp my-secrets.yaml.example my-secrets.yaml
 Then deploy:
 
 ```bash
-helm upgrade --install conference-app ./helm/conference-app \
+helm upgrade --install conference-app oci://ghcr.io/jakepage91/conference-app \
+  --version 1.0.0 \
   --namespace conference-app \
   --create-namespace \
   -f my-secrets.yaml
