@@ -142,7 +142,7 @@ dig honey-we-have-a-problem.freeddns.org
 nslookup honey-we-have-a-problem.freeddns.org
 ```
 
-Dynu typically propagates in **under 5 minutes** since it uses low TTLs for dynamic DNS.
+FreeDNS typically propagates in **under 5 minutes** since it uses low TTLs for dynamic DNS.
 
 ### Timing Recommendations
 
@@ -152,7 +152,7 @@ Dynu typically propagates in **under 5 minutes** since it uses low TTLs for dyna
 | 1 hour before | Verify everything works, do a test vote |
 | 15 min before | Final check |
 
-If your cluster IP changes, just update the IP in Dynu - changes are near-instant.
+If your cluster IP changes, just update the A record in FreeDNS — changes are near-instant.
 
 ## Slack Alerting Setup
 
@@ -168,21 +168,15 @@ If your cluster IP changes, just update the IP in Dynu - changes are near-instan
 
 ### 2. Configure the Secret
 
-Update your `values.yaml`:
+Add the webhook URL to your `my-secrets.yaml` before deploying:
 
 ```yaml
 secrets:
   slack:
-    webhookUrl: "<YOUR_SLACK_WEBHOOK_URL>"
+    webhookUrl: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 ```
 
-Or create the secret manually:
-
-```bash
-kubectl create secret generic slack-webhook \
-  --namespace conference-app \
-  --from-literal=webhook-url='<YOUR_SLACK_WEBHOOK_URL>'
-```
+This gets picked up automatically when you run `helm upgrade --install ... -f my-secrets.yaml`.
 
 ## Running the Demo
 
@@ -286,7 +280,7 @@ honey-the-audience-broke-my-app/
 ├── tests/
 ├── helm/conference-app/     # Kubernetes manifests
 ├── .mirrord/mirrord.json    # mirrord config
-├── .github/workflows/       # CI/CD
+├── my-secrets.yaml.example  # secrets template (copy to my-secrets.yaml)
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
