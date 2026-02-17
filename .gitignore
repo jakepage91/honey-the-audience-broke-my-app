@@ -51,6 +51,7 @@ htmlcov/
 # Kubernetes secrets (never commit real secrets)
 *-secret.yaml
 secrets.yaml.local
+my-secrets.yaml
 
 # OS
 .DS_Store
