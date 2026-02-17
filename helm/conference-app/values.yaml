@@ -3,9 +3,11 @@ namespace: conference-app
 voteApi:
   replicaCount: 2
   image:
-    repository: your-registry/vote-api  # REPLACE BEFORE DEPLOYING
+    repository: ghcr.io/jakepage91/vote-api
     tag: "v1.0.0"
     pullPolicy: IfNotPresent
+    pullSecrets:
+      - name: ghcr-pull-secret
   resources:
     requests:
       cpu: "100m"

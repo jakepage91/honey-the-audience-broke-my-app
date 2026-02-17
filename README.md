@@ -59,8 +59,10 @@ docker-compose up -d
 cat > my-values.yaml << EOF
 voteApi:
   image:
-    repository: your-registry/vote-api
+    repository: ghcr.io/<your-gh-username>/vote-api
     tag: "v1.0.0"
+    pullSecrets:
+      - name: ghcr-pull-secret
 
 ingress:
   host: honey-we-have-a-problem.freeddns.org
@@ -79,36 +81,66 @@ helm install conference-app ./helm/conference-app \
   --create-namespace
 ```
 
+> **Note:** The seed job inserts 500,000 rows into PostgreSQL and runs as a post-install hook. It takes ~60-90 seconds to complete. If it fails due to a transient error, delete the job and rerun with `helm upgrade --install conference-app ./helm/conference-app --namespace conference-app`.
+
 ### Build and Push the Image
 
-```bash
-# Build
-docker build -t your-registry/vote-api:v1.0.0 .
+The image is published to GitHub Container Registry:
 
-# Push
-docker push your-registry/vote-api:v1.0.0
+```bash
+# Build for linux/amd64 (required for Civo/most cloud clusters)
+docker buildx build --platform linux/amd64 --push \
+  -t ghcr.io/<your-gh-username>/vote-api:v1.0.0 .
 ```
 
-## DNS Setup (Dynu)
+If the package is private, create an imagePullSecret in the cluster before deploying:
+
+```bash
+kubectl create secret docker-registry ghcr-pull-secret \
+  --docker-server=ghcr.io \
+  --docker-username=<your-gh-username> \
+  --docker-password=$(gh auth token) \
+  --namespace=conference-app
+```
+
+Then reference it in `values.yaml`:
+
+```yaml
+voteApi:
+  image:
+    repository: ghcr.io/<your-gh-username>/vote-api
+    pullSecrets:
+      - name: ghcr-pull-secret
+```
+
+## DNS Setup
 
 ### 1. Deploy Ingress Controller First
 
-```bash
-# Deploy nginx-ingress controller
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
+Install nginx-ingress via Helm (recommended over the static manifest):
 
-# Wait for external IP to be assigned
-kubectl get svc -n ingress-nginx ingress-nginx-controller -w
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace \
+  --set controller.service.type=LoadBalancer \
+  --wait --timeout=3m
+
+# Get the external IP
+kubectl get svc -n ingress-nginx ingress-nginx-controller
 ```
 
-### 2. Configure Dynu DNS
+### 2. Configure FreeDNS
 
-1. Log in to [dynu.com](https://www.dynu.com/)
-2. Go to **DDNS Services** → select `honey-we-have-a-problem.freeddns.org`
-3. Set the **IPv4 Address** to your ingress controller's external IP
+1. Log in to [freedns.afraid.org](https://freedns.afraid.org/)
+2. Find the `honey-we-have-a-problem.freeddns.org` record
+3. Set the **A record** to your ingress controller's external IP
 4. Save
 
-This sets the **A record** (not MX - that's for email).
+The current deployment points to `212.2.246.153` (Civo cluster `silent-snow-29182266`).
 
 ### 3. Verify DNS Propagation
 

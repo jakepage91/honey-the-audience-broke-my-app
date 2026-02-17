@@ -21,6 +21,10 @@ spec:
     spec:
       serviceAccountName: vote-api
       automountServiceAccountToken: false
+      {{- with .Values.voteApi.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
@@ -43,8 +47,6 @@ spec:
               containerPort: 8000
               protocol: TCP
           env:
-            - name: DATABASE_URL
-              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgresql:5432/$(POSTGRES_DB)"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -60,6 +62,8 @@ spec:
                 secretKeyRef:
                   name: postgresql-credentials
                   key: database
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgresql:5432/$(POSTGRES_DB)"
             - name: REDIS_URL
               {{- if .Values.secrets.redis.password }}
               value: "redis://:$(REDIS_PASSWORD)@redis:6379/0"

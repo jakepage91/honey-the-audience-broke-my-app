@@ -148,8 +148,6 @@ spec:
               pip install --quiet psycopg2-binary -t /tmp/packages && \
               PYTHONPATH=/tmp/packages python /scripts/seed.py
           env:
-            - name: DATABASE_URL
-              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgresql:5432/$(POSTGRES_DB)"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -165,6 +163,8 @@ spec:
                 secretKeyRef:
                   name: postgresql-credentials
                   key: database
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgresql:5432/$(POSTGRES_DB)"
           volumeMounts:
             - name: seed-script
               mountPath: /scripts

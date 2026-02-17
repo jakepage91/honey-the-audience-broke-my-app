@@ -32,6 +32,7 @@ metadata:
     app: postgresql
 data:
   postgresql.conf: |
+    listen_addresses = '*'
     statement_timeout = '{{ .Values.postgresql.statementTimeout }}'
     log_statement = 'all'
     log_duration = on
