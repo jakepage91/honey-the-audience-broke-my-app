@@ -43,7 +43,7 @@ postgresql:
     limits:
       cpu: "500m"
       memory: "512Mi"
-  statementTimeout: "3s"
+  statementTimeout: "100ms"
   seedData: true
   storage:
     size: 10Gi
