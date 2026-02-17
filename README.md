@@ -54,34 +54,23 @@ docker-compose up -d
 
 ### Deploy
 
+A `my-secrets.yaml.example` file is included in the repo as a template. Copy it and fill in your real values — the real file is gitignored so it will never be committed accidentally.
+
 ```bash
-# Create values override file
-cat > my-values.yaml << EOF
-voteApi:
-  image:
-    repository: ghcr.io/<your-gh-username>/vote-api
-    tag: "v1.0.0"
-    pullSecrets:
-      - name: ghcr-pull-secret
-
-ingress:
-  host: honey-we-have-a-problem.freeddns.org
-
-secrets:
-  postgresql:
-    password: your-secure-password
-  slack:
-    webhookUrl: <YOUR_SLACK_WEBHOOK_URL>
-EOF
-
-# Deploy
-helm install conference-app ./helm/conference-app \
-  -f my-values.yaml \
-  --namespace conference-app \
-  --create-namespace
+cp my-secrets.yaml.example my-secrets.yaml
+# Edit my-secrets.yaml with your Slack webhook URL and DB password
 ```
 
-> **Note:** The seed job inserts 500,000 rows into PostgreSQL and runs as a post-install hook. It takes ~60-90 seconds to complete. If it fails due to a transient error, delete the job and rerun with `helm upgrade --install conference-app ./helm/conference-app --namespace conference-app`.
+Then deploy:
+
+```bash
+helm upgrade --install conference-app ./helm/conference-app \
+  --namespace conference-app \
+  --create-namespace \
+  -f my-secrets.yaml
+```
+
+> **Note:** The seed job inserts 500,000 rows into PostgreSQL and runs as a post-install hook. It takes ~60-90 seconds to complete. If it fails due to a transient error, delete the job and rerun the same `helm upgrade --install` command.
 
 ### Build and Push the Image
 
