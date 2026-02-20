@@ -81,7 +81,7 @@ data:
 
           - alert: DatabasePoolExhausted
             expr: db_pool_checked_out >= db_pool_size
-            for: 5s
+            for: 1s
             labels:
               severity: critical
               app: vote-api

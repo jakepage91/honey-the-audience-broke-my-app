@@ -211,8 +211,8 @@ This gets picked up automatically when you run `helm upgrade --install ... -f my
 
 ### Expected Timing
 
-- 5 referral votes → connections start leaking
-- ~5-10 seconds after pool exhaustion → Slack alert fires (Prometheus scrapes every 1 second)
+- 3 referral votes → connections start leaking (pool size is 3)
+- ~1-2 seconds after pool exhaustion → Slack alert fires (Prometheus scrapes every 1 second, alert fires after 1s)
 - Error rate goes to 100% → all requests hang or timeout
 
 ### Between Talks (Resetting for Next Session)
@@ -309,7 +309,7 @@ honey-the-audience-broke-my-app/
 
 - **VoteAPIErrorRateHigh**: Error rate > 50% for 30s
 - **VoteAPIHighLatency**: P95 latency > 2s for 1m
-- **DatabasePoolExhausted**: All connections in use for 5s
+- **DatabasePoolExhausted**: All connections in use for 1s (pool size: 3)
 - **VoteAPIDown**: API unreachable for 10s
 
 ## Development
@@ -344,10 +344,10 @@ The `referral_partners` table has **500,000 rows** with **no index** on the `cod
 6. The connection is returned to the pool in a broken state (or leaked entirely)
 
 The connection pool is configured with:
-- `pool_size=5`
+- `pool_size=3`
 - `max_overflow=0`
 
-After 5 leaked connections, every subsequent request blocks indefinitely waiting for a connection that will never come back.
+After 3 leaked connections, every subsequent request blocks indefinitely waiting for a connection that will never come back.
 
 ### Why Tests Pass
 

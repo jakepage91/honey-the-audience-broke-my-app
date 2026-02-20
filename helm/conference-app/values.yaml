@@ -15,7 +15,7 @@ voteApi:
     limits:
       cpu: "500m"
       memory: "256Mi"
-  dbPoolSize: 5
+  dbPoolSize: 3
   dbMaxOverflow: 0
 
 redis:
