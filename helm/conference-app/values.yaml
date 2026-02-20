@@ -4,7 +4,7 @@ voteApi:
   replicaCount: 1
   image:
     repository: ghcr.io/jakepage91/vote-api
-    tag: "v1.0.0"
+    tag: "v1.1.0"
     pullPolicy: Always
     pullSecrets:
       - name: ghcr-pull-secret
