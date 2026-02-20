@@ -6,8 +6,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorOverlay = document.getElementById('error');
     const errorMessage = document.getElementById('error-message');
     const retryBtn = document.getElementById('retry-btn');
+    const versionEl = document.getElementById('version');
 
     let currentChoice = null;
+
+    // Fetch and display version
+    async function fetchVersion() {
+        try {
+            const response = await fetch('/version');
+            if (response.ok) {
+                const data = await response.json();
+                versionEl.textContent = 'v' + data.version;
+            }
+        } catch (err) {
+            console.error('Failed to fetch version:', err);
+        }
+    }
+
+    fetchVersion();
 
     const choiceLabels = {
         'print': 'Add more print statements',

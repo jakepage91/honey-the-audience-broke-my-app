@@ -1,7 +1,7 @@
 namespace: conference-app
 
 voteApi:
-  replicaCount: 2
+  replicaCount: 1
   image:
     repository: ghcr.io/jakepage91/vote-api
     tag: "v1.0.0"

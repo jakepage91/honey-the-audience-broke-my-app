@@ -16,6 +16,8 @@ from app.models import Vote
 from app.redis_client import increment_vote, get_vote_counts, redis_client
 from app.referral import validate_referral
 
+# Version from environment or default
+VERSION = os.getenv("APP_VERSION", "dev")
 
 VALID_CHOICES = [
     "print",
@@ -162,6 +164,11 @@ async def metrics():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+
+@app.get("/version")
+async def version():
+    return {"version": VERSION}
 
 
 @app.get("/ready")

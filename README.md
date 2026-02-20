@@ -231,7 +231,7 @@ curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/i
 
 ```bash
 # From the project root
-mirrord exec --config-file .mirrord/mirrord.json -- python -m uvicorn app.main:app --reload
+mirrord exec -f mirrord.json python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 This will:
@@ -279,7 +279,8 @@ honey-the-audience-broke-my-app/
 │   └── init_db.sql
 ├── tests/
 ├── helm/conference-app/     # Kubernetes manifests
-├── .mirrord/mirrord.json    # mirrord config
+├── mirrord.json             # mirrord config (steal mode)
+├── mirrord-mirror.json      # mirrord config (mirror mode)
 ├── my-secrets.yaml.example  # secrets template (copy to my-secrets.yaml)
 ├── Dockerfile
 ├── docker-compose.yml
@@ -326,7 +327,7 @@ ruff check .
 The `referral_partners` table has **500,000 rows** with **no index** on the `code` column. When a referral code is validated:
 
 1. The query does a full table scan
-2. PostgreSQL is configured with a 3-second `statement_timeout`
+2. PostgreSQL is configured with a **100ms** `statement_timeout`
 3. The query exceeds the timeout and PostgreSQL kills it
 4. An exception is raised in Python
 5. `conn.close()` is never called because it's after the exception
@@ -342,7 +343,7 @@ After 5 leaked connections, every subsequent request blocks indefinitely waiting
 
 The unit tests use mocks and a small test database. The bug is timing-dependent and only manifests when:
 1. The referral_partners table has 500k rows
-2. The statement_timeout is set to 3 seconds
+2. The statement_timeout is set to 100ms
 3. Multiple referral requests are made in quick succession
 
 ### The Fix

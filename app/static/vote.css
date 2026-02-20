@@ -285,6 +285,15 @@ body {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.3rem;
     letter-spacing: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.version {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    opacity: 0.6;
 }
 
 .heart {

@@ -1,6 +1,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     const resultsContainer = document.getElementById('results');
     const totalCountEl = document.getElementById('total-count');
+    const versionEl = document.getElementById('version');
+    const errorBanner = document.getElementById('error-banner');
+    const errorText = document.getElementById('error-text');
+
+    let errorCount = 0;
+
+    function showError(message) {
+        errorText.textContent = message;
+        errorBanner.style.display = 'block';
+    }
+
+    function hideError() {
+        errorBanner.style.display = 'none';
+    }
+
+    // Fetch and display version
+    async function fetchVersion() {
+        try {
+            const response = await fetch('/version');
+            if (response.ok) {
+                const data = await response.json();
+                versionEl.textContent = 'v' + data.version;
+            }
+        } catch (err) {
+            console.error('Failed to fetch version:', err);
+        }
+    }
+
+    fetchVersion();
 
     function updateResults(data) {
         let total = 0;
@@ -34,10 +63,12 @@ document.addEventListener('DOMContentLoaded', function() {
         eventSource.addEventListener('votes', function(event) {
             const data = JSON.parse(event.data);
             updateResults(data);
+            hideError();
         });
 
         eventSource.onerror = function(err) {
             console.error('SSE error:', err);
+            showError('Connection lost. Retrying...');
             eventSource.close();
             setTimeout(connectSSE, 3000);
         };
@@ -49,9 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 const data = await response.json();
                 updateResults(data);
+                hideError();
+            } else {
+                showError('Failed to load results. Retrying...');
             }
         } catch (err) {
             console.error('Failed to fetch initial results:', err);
+            showError('Connection error. Retrying...');
         }
     }
 

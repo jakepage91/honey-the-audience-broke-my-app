@@ -54,18 +54,18 @@ body {
     z-index: 1;
     max-width: 1600px;
     margin: 0 auto;
-    padding: 30px 50px;
+    padding: 15px 30px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 .header {
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .taxi-stripe-top {
-    height: 12px;
+    height: 8px;
     background: repeating-linear-gradient(
         90deg,
         var(--taxi-yellow),
@@ -73,7 +73,7 @@ body {
         var(--nyc-black) 40px,
         var(--nyc-black) 80px
     );
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .header-content {
@@ -88,14 +88,14 @@ body {
 }
 
 .line {
-    width: 50px;
-    height: 50px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: white;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
@@ -107,31 +107,31 @@ body {
 
 .title {
     font-family: 'Permanent Marker', cursive;
-    font-size: 5rem;
+    font-size: 3rem;
     color: var(--taxi-yellow);
     text-shadow:
-        4px 4px 0 var(--neon-pink),
-        -2px -2px 0 var(--neon-green),
-        0 0 30px rgba(255, 215, 0, 0.5);
-    letter-spacing: 4px;
+        3px 3px 0 var(--neon-pink),
+        -1px -1px 0 var(--neon-green),
+        0 0 20px rgba(255, 215, 0, 0.5);
+    letter-spacing: 3px;
     animation: titleGlow 2s ease-in-out infinite alternate;
 }
 
 @keyframes titleGlow {
-    from { text-shadow: 4px 4px 0 var(--neon-pink), -2px -2px 0 var(--neon-green), 0 0 30px rgba(255, 215, 0, 0.5); }
-    to { text-shadow: 4px 4px 0 var(--neon-pink), -2px -2px 0 var(--neon-green), 0 0 50px rgba(255, 215, 0, 0.8); }
+    from { text-shadow: 3px 3px 0 var(--neon-pink), -1px -1px 0 var(--neon-green), 0 0 20px rgba(255, 215, 0, 0.5); }
+    to { text-shadow: 3px 3px 0 var(--neon-pink), -1px -1px 0 var(--neon-green), 0 0 30px rgba(255, 215, 0, 0.8); }
 }
 
 .badge {
     background: var(--taxi-yellow);
     color: var(--nyc-black);
-    padding: 15px 25px;
+    padding: 10px 15px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 3px;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .badge .heart {
@@ -145,66 +145,66 @@ body {
 }
 
 .question-banner {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
 .neon-border {
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg,
         transparent 0%,
         var(--neon-green) 20%,
         var(--neon-pink) 50%,
         var(--neon-green) 80%,
         transparent 100%);
-    box-shadow: 0 0 15px var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
 }
 
 .question {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 3rem;
-    padding: 25px;
+    font-size: 1.8rem;
+    padding: 15px;
     color: var(--subway-white);
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
 }
 
 .results-grid {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    padding: 20px 0;
+    gap: 15px;
+    padding: 10px 0;
 }
 
 .result-row {
     display: flex;
     align-items: center;
-    gap: 30px;
-    padding: 20px 30px;
+    gap: 20px;
+    padding: 12px 20px;
     background: linear-gradient(90deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.7));
-    border-left: 6px solid var(--taxi-yellow);
+    border-left: 4px solid var(--taxi-yellow);
     transition: all 0.3s ease;
 }
 
 .result-label {
     display: flex;
     align-items: center;
-    gap: 20px;
-    min-width: 450px;
+    gap: 15px;
+    min-width: 350px;
 }
 
 .result-icon {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
+    font-size: 1.4rem;
     color: var(--neon-green);
-    min-width: 80px;
+    min-width: 60px;
     text-align: center;
-    text-shadow: 0 0 10px var(--neon-green);
+    text-shadow: 0 0 8px var(--neon-green);
 }
 
 .result-text {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: var(--subway-white);
 }
@@ -213,8 +213,8 @@ body {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 20px;
-    height: 60px;
+    gap: 15px;
+    height: 45px;
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid rgba(255, 255, 255, 0.1);
     position: relative;
@@ -267,9 +267,9 @@ body {
 
 .bar-count {
     position: absolute;
-    right: 20px;
+    right: 15px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     color: var(--subway-white);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     z-index: 10;
@@ -277,26 +277,37 @@ body {
 
 .footer {
     margin-top: auto;
-    padding-top: 30px;
+    padding-top: 15px;
 }
 
 .total-votes {
     text-align: center;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 3rem;
+    font-size: 2rem;
     color: var(--taxi-yellow);
-    margin-bottom: 20px;
-    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    margin-bottom: 15px;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }
 
-.total-votes span {
-    font-size: 4rem;
+.total-votes #total-count {
+    font-size: 2.5rem;
     color: var(--neon-green);
-    text-shadow: 0 0 30px var(--neon-green);
+    text-shadow: 0 0 20px var(--neon-green);
+}
+
+.total-votes .version {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9rem;
+    opacity: 0.4;
+    text-shadow: none;
 }
 
 .taxi-stripe-bottom {
-    height: 12px;
+    height: 8px;
     background: repeating-linear-gradient(
         90deg,
         var(--taxi-yellow),
@@ -304,6 +315,50 @@ body {
         var(--nyc-black) 40px,
         var(--nyc-black) 80px
     );
+}
+
+/* Error banner */
+.error-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #EE352E;
+    padding: 12px;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(238, 53, 46, 0.6);
+    animation: slideDown 0.3s ease;
+}
+
+.error-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+.error-icon {
+    font-size: 1.5rem;
+    animation: shake 0.5s infinite;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 @media (max-width: 1200px) {
