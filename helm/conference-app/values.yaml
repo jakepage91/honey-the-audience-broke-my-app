@@ -61,7 +61,7 @@ prometheus:
     limits:
       cpu: "500m"
       memory: "512Mi"
-  scrapeInterval: "5s"
+  scrapeInterval: "1s"
 
 alertmanager:
   image:

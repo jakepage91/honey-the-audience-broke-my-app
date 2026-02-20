@@ -82,6 +82,12 @@ body {
     justify-content: space-between;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .subway-lines {
     display: flex;
     gap: 10px;
@@ -137,6 +143,29 @@ body {
 .badge .heart {
     color: #EE352E;
     animation: pulse 1s infinite;
+}
+
+.reset-btn {
+    background: #EE352E;
+    color: white;
+    border: 2px solid white;
+    padding: 10px 15px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 10px rgba(238, 53, 46, 0.5);
+}
+
+.reset-btn:hover {
+    background: #ff4444;
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(238, 53, 46, 0.8);
+}
+
+.reset-btn:active {
+    transform: translateY(0);
 }
 
 @keyframes pulse {

@@ -212,8 +212,17 @@ This gets picked up automatically when you run `helm upgrade --install ... -f my
 ### Expected Timing
 
 - 5 referral votes → connections start leaking
-- ~30 seconds after pool exhaustion → Slack alert fires
+- ~5-10 seconds after pool exhaustion → Slack alert fires (Prometheus scrapes every 1 second)
 - Error rate goes to 100% → all requests hang or timeout
+
+### Between Talks (Resetting for Next Session)
+
+Click the **"RESET SESSION"** button in the top-right of the results dashboard to:
+- Clear all votes from the database
+- Reset Redis cache to zero
+- Keep the 500k referral_partners table intact (no need to re-seed)
+
+This takes ~1 second and prepares the app for your next demo session.
 
 ## Debugging with mirrord
 
@@ -300,7 +309,8 @@ honey-the-audience-broke-my-app/
 
 - **VoteAPIErrorRateHigh**: Error rate > 50% for 30s
 - **VoteAPIHighLatency**: P95 latency > 2s for 1m
-- **DatabasePoolExhausted**: All connections in use
+- **DatabasePoolExhausted**: All connections in use for 5s
+- **VoteAPIDown**: API unreachable for 10s
 
 ## Development
 

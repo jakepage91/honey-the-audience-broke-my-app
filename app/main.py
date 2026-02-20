@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
+from sqlalchemy import text
 
 from app.database import engine, Base
 from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size
@@ -169,6 +170,40 @@ async def health():
 @app.get("/version")
 async def version():
     return {"version": VERSION}
+
+
+@app.post("/admin/reset")
+async def reset_session(confirm: str = None):
+    """Reset the database for a new demo session.
+
+    Clears all votes and Redis cache. Keeps referral_partners table intact.
+    Requires ?confirm=yes to execute.
+    """
+    if confirm != "yes":
+        raise HTTPException(
+            status_code=400,
+            detail="Add ?confirm=yes to reset the session"
+        )
+
+    try:
+        # Clear all votes from database
+        with engine.connect() as conn:
+            conn.execute(text("DELETE FROM votes"))
+            conn.commit()
+
+        # Clear Redis cache
+        redis_client.flushdb()
+
+        # Re-initialize vote counts in Redis
+        for choice in VALID_CHOICES:
+            redis_client.hset("vote_counts", choice, 0)
+
+        return {
+            "status": "success",
+            "message": "Session reset complete. All votes cleared."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reset failed: {str(e)}")
 
 
 @app.get("/ready")
