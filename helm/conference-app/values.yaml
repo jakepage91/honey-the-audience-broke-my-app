@@ -5,7 +5,7 @@ voteApi:
   image:
     repository: ghcr.io/jakepage91/vote-api
     tag: "v1.0.0"
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     pullSecrets:
       - name: ghcr-pull-secret
   resources:
