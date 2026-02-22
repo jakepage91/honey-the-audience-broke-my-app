@@ -10,9 +10,10 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy import text
+from sqlalchemy.exc import TimeoutError as PoolTimeoutError, OperationalError
 
 from app.database import engine, Base
-from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size
+from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size, db_pool_timeout_total
 from app.models import Vote
 from app.redis_client import increment_vote, get_vote_counts, redis_client
 from app.referral import validate_referral
@@ -87,25 +88,42 @@ async def submit_vote(vote: VoteRequest):
             detail=f"Invalid choice. Must be one of: {', '.join(VALID_CHOICES)}"
         )
 
-    if vote.referral:
-        partner = validate_referral(vote.referral)
-        if not partner:
-            raise HTTPException(status_code=400, detail="Invalid referral code")
+    try:
+        if vote.referral:
+            partner = validate_referral(vote.referral)
+            if not partner:
+                raise HTTPException(status_code=400, detail="Invalid referral code")
 
-    increment_vote(vote.choice)
+        increment_vote(vote.choice)
 
-    with engine.connect() as conn:
-        conn.execute(
-            Vote.__table__.insert().values(
-                choice=vote.choice,
-                referral_code=vote.referral
+        with engine.connect() as conn:
+            conn.execute(
+                Vote.__table__.insert().values(
+                    choice=vote.choice,
+                    referral_code=vote.referral
+                )
             )
+            conn.commit()
+
+        update_pool_metrics()
+
+        return {"status": "ok", "choice": vote.choice}
+
+    except PoolTimeoutError:
+        db_pool_timeout_total.inc()
+        update_pool_metrics()
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection pool exhausted. All connections are in use - this is caused by a connection leak bug."
         )
-        conn.commit()
-
-    update_pool_metrics()
-
-    return {"status": "ok", "choice": vote.choice}
+    except OperationalError as e:
+        # Query was cancelled (e.g., statement_timeout) - connection may have leaked
+        db_pool_timeout_total.inc()
+        update_pool_metrics()
+        raise HTTPException(
+            status_code=503,
+            detail="Database query failed. This often precedes connection pool exhaustion due to a connection leak bug."
+        )
 
 
 @app.get("/votes")

@@ -25,6 +25,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fetchVersion();
 
+    // Conference logo support
+    function loadConferenceLogo() {
+        const params = new URLSearchParams(window.location.search);
+        const conf = params.get('conf');
+        const logoEl = document.getElementById('conference-logo');
+        const logoImg = document.getElementById('logo-img');
+
+        const conferenceLogos = {
+            'sreday': '/static/logos/sreday.png',
+            'kubecon': '/static/logos/kubecon.png',
+            'devopsdays': '/static/logos/devopsdays.png'
+        };
+
+        if (conf && conferenceLogos[conf]) {
+            logoImg.src = conferenceLogos[conf];
+            logoImg.alt = conf.toUpperCase() + ' Conference';
+            logoEl.style.display = 'block';
+        }
+    }
+
+    loadConferenceLogo();
+
     const choiceLabels = {
         'print': 'Add more print statements',
         'stare': 'Stare at the code until it confesses',
@@ -67,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 20000);  // Increased to 20s
 
         try {
             const response = await fetch('/vote', {
@@ -85,13 +107,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideLoading();
                 showConfirmation(choice);
             } else {
-                const error = await response.json();
-                showError('Vote failed: ' + (error.detail || 'Server returned an error'));
+                let errorDetail = 'Server returned an error';
+                try {
+                    const error = await response.json();
+                    errorDetail = error.detail || errorDetail;
+                } catch (e) {
+                    // Response wasn't JSON, use status text
+                    errorDetail = response.statusText || errorDetail;
+                }
+
+                if (response.status === 503) {
+                    showError('⚠️ DATABASE CONNECTION POOL EXHAUSTED! All connections are in use due to the referral bug. The app is broken!');
+                } else if (response.status === 500) {
+                    showError('⚠️ SERVER ERROR: ' + errorDetail);
+                } else {
+                    showError('Vote failed: ' + errorDetail);
+                }
             }
         } catch (err) {
             clearTimeout(timeoutId);
             if (err.name === 'AbortError') {
-                showError('Request timed out. The server might be overwhelmed or down.');
+                showError('⏱️ REQUEST TIMED OUT (20s)! The app is hanging - likely waiting for a database connection that will never come. Connection pool exhausted!');
             } else {
                 showError('Network error. The connection failed.');
             }

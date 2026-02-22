@@ -13,6 +13,10 @@
     <div class="brick-overlay"></div>
 
     <div class="container">
+        <div class="conference-logo" id="conference-logo" style="display: none;">
+            <img id="logo-img" src="" alt="Conference Logo">
+        </div>
+
         <header class="header">
             <div class="taxi-stripe-top"></div>
             <div class="header-content">
@@ -106,6 +110,12 @@
         </main>
 
         <footer class="footer">
+            <div class="pool-status" id="pool-status">
+                <span class="pool-label">DB Pool:</span>
+                <span class="pool-indicator" id="pool-indicator">
+                    <span id="pool-used">0</span>/<span id="pool-total">3</span>
+                </span>
+            </div>
             <div class="total-votes">
                 TOTAL VOTES: <span id="total-count">0</span>
                 <span class="version" id="version">v...</span>

@@ -26,6 +26,11 @@ db_pool_size = Gauge(
     "Total database connection pool size"
 )
 
+db_pool_timeout_total = Counter(
+    "db_pool_timeout_total",
+    "Total database connection pool timeout errors"
+)
+
 
 def get_metrics_response() -> Response:
     return Response(

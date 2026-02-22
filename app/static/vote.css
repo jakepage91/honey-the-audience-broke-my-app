@@ -5,22 +5,26 @@
 }
 
 :root {
-    --taxi-yellow: #FFD700;
-    --nyc-black: #1a1a1a;
-    --neon-green: #39FF14;
-    --neon-pink: #FF1493;
-    --brick-red: #8B4513;
-    --subway-white: #f5f5f5;
-    --graffiti-blue: #4169E1;
+    --metalbear-purple: #756DF3;
+    --metalbear-yellow: #FFCB7D;
+    --metalbear-black: #000000;
+    --metalbear-light-grey: #FAFAFD;
+    --metalbear-medium-purple: #E4E3FD;
+    --metalbear-dark-purple: #232141;
+}
+
+html {
+    overflow-x: hidden;
 }
 
 body {
     font-family: 'Space Mono', monospace;
-    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    background: linear-gradient(135deg, var(--metalbear-light-grey) 0%, #ffffff 100%);
     min-height: 100vh;
-    color: var(--subway-white);
+    color: var(--metalbear-black);
     position: relative;
     overflow-x: hidden;
+    width: 100%;
 }
 
 .brick-overlay {
@@ -34,15 +38,15 @@ body {
             0deg,
             transparent,
             transparent 48px,
-            rgba(139, 69, 19, 0.3) 48px,
-            rgba(139, 69, 19, 0.3) 50px
+            rgba(117, 109, 243, 0.05) 48px,
+            rgba(117, 109, 243, 0.05) 50px
         ),
         repeating-linear-gradient(
             90deg,
             transparent,
             transparent 98px,
-            rgba(139, 69, 19, 0.2) 98px,
-            rgba(139, 69, 19, 0.2) 100px
+            rgba(117, 109, 243, 0.03) 98px,
+            rgba(117, 109, 243, 0.03) 100px
         );
     pointer-events: none;
     z-index: 0;
@@ -59,6 +63,28 @@ body {
     flex-direction: column;
 }
 
+.conference-logo {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.3);
+    transform: rotate(3deg);
+    border: 2px solid var(--metalbear-purple);
+}
+
+.conference-logo img {
+    display: block;
+    max-width: 120px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+}
+
 .header {
     text-align: center;
     margin-bottom: 20px;
@@ -68,10 +94,10 @@ body {
     height: 8px;
     background: repeating-linear-gradient(
         90deg,
-        var(--taxi-yellow),
-        var(--taxi-yellow) 20px,
-        var(--nyc-black) 20px,
-        var(--nyc-black) 40px
+        var(--metalbear-purple),
+        var(--metalbear-purple) 20px,
+        var(--metalbear-yellow) 20px,
+        var(--metalbear-yellow) 40px
     );
     border-radius: 2px;
 }
@@ -87,10 +113,10 @@ body {
 .title {
     font-family: 'Permanent Marker', cursive;
     font-size: 2.5rem;
-    color: var(--taxi-yellow);
+    color: var(--metalbear-purple);
     text-shadow:
-        3px 3px 0 var(--neon-pink),
-        -1px -1px 0 var(--neon-green);
+        2px 2px 0 var(--metalbear-yellow),
+        -1px -1px 0 var(--metalbear-medium-purple);
     letter-spacing: 2px;
 }
 
@@ -112,23 +138,24 @@ body {
     color: white;
 }
 
-.line-a { background: #0039A6; }
-.line-1 { background: #EE352E; }
-.line-7 { background: #B933AD; }
+.line-a { background: var(--metalbear-purple); }
+.line-1 { background: var(--metalbear-yellow); color: var(--metalbear-black); }
+.line-7 { background: var(--metalbear-medium-purple); color: var(--metalbear-black); }
 
 .main-content {
     flex: 1;
 }
 
 .question-card {
-    background: var(--subway-white);
-    color: var(--nyc-black);
+    background: white;
+    color: var(--metalbear-black);
     padding: 25px 20px;
-    border-radius: 4px;
+    border-radius: 12px;
     position: relative;
     margin-bottom: 20px;
     transform: rotate(-1deg);
-    box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.2);
+    border: 2px solid var(--metalbear-medium-purple);
 }
 
 .staple {
@@ -148,12 +175,12 @@ body {
     font-size: 1.6rem;
     line-height: 1.2;
     margin-bottom: 10px;
-    color: var(--nyc-black);
+    color: var(--metalbear-black);
 }
 
 .subtitle {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--metalbear-dark-purple);
     letter-spacing: 3px;
 }
 
@@ -168,22 +195,27 @@ body {
     align-items: center;
     gap: 15px;
     padding: 18px 20px;
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-    border: 3px solid var(--taxi-yellow);
-    border-radius: 4px;
-    color: var(--subway-white);
+    background: white;
+    border: 3px solid var(--metalbear-purple);
+    border-radius: 12px;
+    color: var(--metalbear-black);
     font-family: 'Space Mono', monospace;
     font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    -webkit-tap-highlight-color: rgba(117, 109, 243, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    box-shadow: 0 2px 8px rgba(117, 109, 243, 0.15);
 }
 
 .option-btn:hover {
-    background: var(--taxi-yellow);
-    color: var(--nyc-black);
+    background: var(--metalbear-purple);
+    color: white;
     transform: translateX(5px);
-    box-shadow: -5px 5px 0 var(--neon-pink);
+    box-shadow: -5px 5px 0 var(--metalbear-yellow);
 }
 
 .option-btn:active {
@@ -195,11 +227,11 @@ body {
     font-size: 1.2rem;
     min-width: 50px;
     text-align: center;
-    color: var(--neon-green);
+    color: var(--metalbear-purple);
 }
 
 .option-btn:hover .option-icon {
-    color: var(--nyc-black);
+    color: white;
 }
 
 .option-text {
@@ -221,12 +253,14 @@ body {
 }
 
 .confirm-card {
-    background: var(--nyc-black);
-    border: 4px solid var(--taxi-yellow);
+    background: white;
+    border: 4px solid var(--metalbear-purple);
+    border-radius: 16px;
     padding: 40px;
     text-align: center;
     max-width: 350px;
     animation: popIn 0.3s ease-out;
+    box-shadow: 0 8px 24px rgba(117, 109, 243, 0.25);
 }
 
 @keyframes popIn {
@@ -237,11 +271,10 @@ body {
 .neon-text {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 2.5rem;
-    color: var(--neon-green);
+    color: var(--metalbear-purple);
     text-shadow:
-        0 0 10px var(--neon-green),
-        0 0 20px var(--neon-green),
-        0 0 30px var(--neon-green);
+        0 0 10px rgba(117, 109, 243, 0.5),
+        0 0 20px rgba(117, 109, 243, 0.3);
     margin-bottom: 20px;
     animation: flicker 2s infinite;
 }
@@ -255,11 +288,12 @@ body {
 
 .confirm-choice {
     font-size: 1.1rem;
-    color: var(--subway-white);
+    color: var(--metalbear-black);
     margin-bottom: 20px;
     padding: 10px;
-    background: rgba(255, 215, 0, 0.1);
-    border-left: 4px solid var(--taxi-yellow);
+    background: var(--metalbear-medium-purple);
+    border-left: 4px solid var(--metalbear-purple);
+    border-radius: 8px;
 }
 
 .pizza-icon {
@@ -269,7 +303,39 @@ body {
 .thanks {
     font-family: 'Permanent Marker', cursive;
     font-size: 1.3rem;
-    color: var(--neon-pink);
+    color: var(--metalbear-purple);
+    margin-bottom: 25px;
+}
+
+.results-btn {
+    display: inline-block;
+    background: var(--metalbear-purple);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.4);
+    -webkit-tap-highlight-color: rgba(117, 109, 243, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.results-btn:hover {
+    background: var(--metalbear-yellow);
+    color: var(--metalbear-black);
+    box-shadow: 0 6px 16px rgba(255, 203, 125, 0.5);
+    transform: scale(1.05);
+}
+
+.results-btn:active {
+    transform: scale(0.98);
 }
 
 .footer {
@@ -280,24 +346,25 @@ body {
 
 .footer-content {
     padding: 15px;
-    background: var(--taxi-yellow);
-    color: var(--nyc-black);
+    background: var(--metalbear-purple);
+    color: white;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.3rem;
     letter-spacing: 2px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 8px;
 }
 
 .version {
     font-family: 'Space Mono', monospace;
     font-size: 0.75rem;
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 .heart {
-    color: #EE352E;
+    color: var(--metalbear-yellow);
     animation: pulse 1s infinite;
 }
 
@@ -332,11 +399,11 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    background: linear-gradient(135deg, var(--metalbear-purple) 0%, var(--metalbear-yellow) 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 30px rgba(117, 109, 243, 0.5);
     animation: spin 1.5s linear infinite;
 }
 
@@ -344,8 +411,8 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: #000;
-    color: #FFD700;
+    background: white;
+    color: var(--metalbear-purple);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -355,7 +422,7 @@ body {
 }
 
 .loading-text {
-    color: #FFD700;
+    color: var(--metalbear-purple);
     font-family: 'Space Mono', monospace;
     font-size: 1.2rem;
     text-transform: uppercase;
@@ -382,12 +449,13 @@ body {
 }
 
 .error-card {
-    background: #1a1a1a;
-    border: 3px solid #EE352E;
+    background: white;
+    border: 3px solid var(--metalbear-purple);
+    border-radius: 16px;
     padding: 40px;
     text-align: center;
     max-width: 400px;
-    box-shadow: 0 0 40px rgba(238, 53, 46, 0.6);
+    box-shadow: 0 8px 24px rgba(117, 109, 243, 0.3);
 }
 
 .error-icon {
@@ -397,16 +465,15 @@ body {
 }
 
 .error-title {
-    color: #EE352E;
+    color: var(--metalbear-purple);
     font-family: 'Bebas Neue', sans-serif;
     font-size: 2rem;
     letter-spacing: 3px;
     margin-bottom: 15px;
-    text-shadow: 0 0 10px rgba(238, 53, 46, 0.8);
 }
 
 .error-message {
-    color: #FFD700;
+    color: var(--metalbear-black);
     font-family: 'Space Mono', monospace;
     font-size: 1rem;
     margin-bottom: 30px;
@@ -414,20 +481,31 @@ body {
 }
 
 .retry-btn {
-    background: #EE352E;
-    color: #fff;
+    background: var(--metalbear-purple);
+    color: white;
     border: none;
+    border-radius: 12px;
     padding: 15px 40px;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.3rem;
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s ease;
+    -webkit-tap-highlight-color: rgba(117, 109, 243, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.4);
 }
 
 .retry-btn:hover {
-    background: #ff4444;
-    box-shadow: 0 0 20px rgba(238, 53, 46, 0.8);
+    background: var(--metalbear-yellow);
+    color: var(--metalbear-black);
+    box-shadow: 0 6px 16px rgba(255, 203, 125, 0.5);
+}
+
+.retry-btn:active {
+    transform: scale(0.98);
 }
 
 @keyframes shake {
@@ -436,27 +514,171 @@ body {
     75% { transform: translateX(5px); }
 }
 
-@media (max-width: 400px) {
+/* Tablet optimization */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
     .title {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .question {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
     }
 
     .option-btn {
-        padding: 15px;
+        padding: 16px 18px;
+        font-size: 0.9rem;
+    }
+
+    .confirm-card {
+        padding: 30px 25px;
+        max-width: 90%;
+    }
+
+    .neon-text {
+        font-size: 2rem;
+    }
+
+    .confirm-choice {
+        font-size: 1rem;
+    }
+
+    .thanks {
+        font-size: 1.2rem;
+    }
+
+    .results-btn {
+        padding: 12px 35px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Mobile phone optimization */
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+
+    .conference-logo {
+        top: 10px;
+        right: 10px;
+        padding: 6px;
+        border-radius: 10px;
+    }
+
+    .conference-logo img {
+        max-width: 90px;
+        max-height: 60px;
+        border-radius: 6px;
+    }
+
+    .title {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+    }
+
+    .subway-badge {
+        gap: 3px;
+    }
+
+    .line {
+        width: 24px;
+        height: 24px;
+        font-size: 0.95rem;
+    }
+
+    .title-wrapper {
+        gap: 10px;
+        padding: 12px 0;
+    }
+
+    .question-card {
+        padding: 20px 15px;
+    }
+
+    .question {
+        font-size: 1.3rem;
+    }
+
+    .subtitle {
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+    }
+
+    .options {
+        gap: 10px;
+    }
+
+    .option-btn {
+        padding: 14px 15px;
         font-size: 0.85rem;
+        gap: 12px;
     }
 
     .option-icon {
-        min-width: 40px;
-        font-size: 1rem;
+        min-width: 45px;
+        font-size: 1.1rem;
+    }
+
+    .confirm-card {
+        padding: 25px 20px;
+        border: 3px solid var(--taxi-yellow);
+    }
+
+    .neon-text {
+        font-size: 1.8rem;
+    }
+
+    .confirm-choice {
+        font-size: 0.95rem;
+        padding: 8px;
+    }
+
+    .pizza-icon svg {
+        width: 50px;
+        height: 50px;
+    }
+
+    .thanks {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+
+    .results-btn {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+    }
+
+    .footer-content {
+        font-size: 1.1rem;
+        padding: 12px;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .version {
+        font-size: 0.7rem;
     }
 
     .error-card {
         padding: 30px 20px;
+        max-width: 90%;
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+    }
+
+    .error-message {
+        font-size: 0.9rem;
+    }
+
+    .retry-btn {
+        padding: 12px 35px;
+        font-size: 1.1rem;
     }
 
     .token-outer {
@@ -468,5 +690,40 @@ body {
         width: 65px;
         height: 65px;
         font-size: 2.5rem;
+    }
+
+    .loading-text {
+        font-size: 1rem;
+    }
+}
+
+/* Small mobile phones */
+@media (max-width: 360px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .question {
+        font-size: 1.1rem;
+    }
+
+    .option-btn {
+        padding: 12px;
+        font-size: 0.8rem;
+        gap: 10px;
+    }
+
+    .option-icon {
+        min-width: 40px;
+        font-size: 1rem;
+    }
+
+    .neon-text {
+        font-size: 1.5rem;
+    }
+
+    .results-btn {
+        padding: 10px 25px;
+        font-size: 1rem;
     }
 }

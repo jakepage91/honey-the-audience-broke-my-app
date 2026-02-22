@@ -346,6 +346,8 @@ The `referral_partners` table has **500,000 rows** with **no index** on the `cod
 The connection pool is configured with:
 - `pool_size=3`
 - `max_overflow=0`
+- `pool_recycle=-1` (never auto-recycle)
+- `pool_pre_ping=False` (don't validate before use)
 
 After 3 leaked connections, every subsequent request blocks indefinitely waiting for a connection that will never come back.
 

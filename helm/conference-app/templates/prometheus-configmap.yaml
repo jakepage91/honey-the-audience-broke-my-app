@@ -80,14 +80,15 @@ data:
               description: "P95 latency is {{ "{{" }} $value | humanizeDuration {{ "}}" }}"
 
           - alert: DatabasePoolExhausted
-            expr: db_pool_checked_out >= db_pool_size
-            for: 1s
+            expr: increase(db_pool_timeout_total[5m]) > 0
+            for: 5s
+            keep_firing_for: 5m
             labels:
               severity: critical
               app: vote-api
             annotations:
-              summary: "Database connection pool exhausted"
-              description: "All database connections are in use. This may indicate a connection leak."
+              summary: "Database connection pool exhausted - connection leak detected!"
+              description: "{{ "{{" }} $value {{ "}}" }} pool timeout errors in the last 5 minutes. Users are seeing 503 errors. Check referral validation code for connection leaks."
 
           - alert: VoteAPIDown
             expr: up{job="vote-api"} == 0
