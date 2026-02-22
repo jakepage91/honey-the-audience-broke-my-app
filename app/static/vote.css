@@ -85,6 +85,29 @@ body {
     border-radius: 8px;
 }
 
+.welcome-banner {
+    background: linear-gradient(90deg, var(--metalbear-purple), #8B83F5);
+    color: white;
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.4);
+    border: 2px solid var(--metalbear-yellow);
+}
+
+.welcome-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#conference-name {
+    color: var(--metalbear-yellow);
+    font-weight: bold;
+}
+
 .header {
     text-align: center;
     margin-bottom: 20px;

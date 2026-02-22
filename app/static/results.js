@@ -5,9 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorBanner = document.getElementById('error-banner');
     const errorText = document.getElementById('error-text');
     const resetBtn = document.getElementById('reset-btn');
-    const poolUsedEl = document.getElementById('pool-used');
-    const poolTotalEl = document.getElementById('pool-total');
-    const poolIndicator = document.getElementById('pool-indicator');
 
     let errorCount = 0;
 
@@ -20,79 +17,44 @@ document.addEventListener('DOMContentLoaded', function() {
         errorBanner.style.display = 'none';
     }
 
-    // Fetch and display version
-    async function fetchVersion() {
+    // Conference config - add new conferences here
+    const conferenceConfig = {
+        'sreday': { logo: '/static/logos/sreday.png', name: 'SREDay' },
+        'kubecon': { logo: '/static/logos/kubecon.png', name: 'KubeCon' },
+        'devopsdays': { logo: '/static/logos/devopsdays.png', name: 'DevOpsDays' }
+    };
+
+    // Load conference logo
+    function loadConferenceLogo(conf) {
+        if (!conf || !conferenceConfig[conf]) return;
+
+        const config = conferenceConfig[conf];
+        const logoEl = document.getElementById('conference-logo');
+        const logoImg = document.getElementById('logo-img');
+        logoImg.src = config.logo;
+        logoImg.alt = config.name + ' Conference';
+        logoEl.style.display = 'block';
+    }
+
+    // Fetch version and conference config from server
+    async function fetchConfig() {
         try {
             const response = await fetch('/version');
             if (response.ok) {
                 const data = await response.json();
                 versionEl.textContent = 'v' + data.version;
+
+                // URL param overrides server config
+                const params = new URLSearchParams(window.location.search);
+                const conf = params.get('conf') || data.conference;
+                loadConferenceLogo(conf);
             }
         } catch (err) {
-            console.error('Failed to fetch version:', err);
+            console.error('Failed to fetch config:', err);
         }
     }
 
-    fetchVersion();
-
-    // Conference logo support
-    function loadConferenceLogo() {
-        const params = new URLSearchParams(window.location.search);
-        const conf = params.get('conf');
-        const logoEl = document.getElementById('conference-logo');
-        const logoImg = document.getElementById('logo-img');
-
-        const conferenceLogos = {
-            'sreday': '/static/logos/sreday.png',
-            'kubecon': '/static/logos/kubecon.png',
-            'devopsdays': '/static/logos/devopsdays.png'
-        };
-
-        if (conf && conferenceLogos[conf]) {
-            logoImg.src = conferenceLogos[conf];
-            logoImg.alt = conf.toUpperCase() + ' Conference';
-            logoEl.style.display = 'block';
-        }
-    }
-
-    loadConferenceLogo();
-
-    // Poll database pool metrics every 2 seconds
-    async function updatePoolStatus() {
-        try {
-            const response = await fetch('/metrics');
-            if (response.ok) {
-                const text = await response.text();
-
-                // Parse Prometheus metrics
-                const poolSizeMatch = text.match(/db_pool_size\s+([\d.]+)/);
-                const poolCheckedOutMatch = text.match(/db_pool_checked_out\s+([\d.]+)/);
-
-                if (poolSizeMatch && poolCheckedOutMatch) {
-                    const total = parseInt(poolSizeMatch[1]);
-                    const used = parseInt(poolCheckedOutMatch[1]);
-
-                    poolTotalEl.textContent = total;
-                    poolUsedEl.textContent = used;
-
-                    // Update indicator style based on usage
-                    poolIndicator.classList.remove('pool-warning', 'pool-critical');
-                    if (used >= total) {
-                        poolIndicator.classList.add('pool-critical');
-                    } else if (used >= total - 1) {
-                        poolIndicator.classList.add('pool-warning');
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('Failed to fetch pool metrics:', err);
-        }
-    }
-
-    // Initial pool status check
-    updatePoolStatus();
-    // Poll every 2 seconds
-    setInterval(updatePoolStatus, 2000);
+    fetchConfig();
 
     let sseRetryCount = 0;
 

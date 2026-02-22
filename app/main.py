@@ -13,13 +13,14 @@ from sqlalchemy import text
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError, OperationalError
 
 from app.database import engine, Base
-from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size, db_pool_timeout_total
+from app.metrics import MetricsMiddleware, get_metrics_response, db_pool_checked_out, db_pool_size, db_pool_timeout_total, referral_cache_exhausted_total
 from app.models import Vote
 from app.redis_client import increment_vote, get_vote_counts, redis_client
 from app.referral import validate_referral
 
-# Version from environment or default
+# Version and conference from environment
 VERSION = os.getenv("APP_VERSION", "dev")
+CONFERENCE = os.getenv("CONFERENCE", "")
 
 VALID_CHOICES = [
     "print",
@@ -124,6 +125,13 @@ async def submit_vote(vote: VoteRequest):
             status_code=503,
             detail="Database query failed. This often precedes connection pool exhaustion due to a connection leak bug."
         )
+    except RuntimeError as e:
+        # Referral cache exhausted - unbounded cache bug
+        referral_cache_exhausted_total.inc()
+        raise HTTPException(
+            status_code=503,
+            detail=str(e)
+        )
 
 
 @app.get("/votes")
@@ -187,7 +195,7 @@ async def health():
 
 @app.get("/version")
 async def version():
-    return {"version": VERSION}
+    return {"version": VERSION, "conference": CONFERENCE}
 
 
 @app.post("/admin/reset")

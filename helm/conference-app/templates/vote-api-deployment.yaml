@@ -79,6 +79,10 @@ spec:
               value: "{{ .Values.voteApi.dbPoolSize }}"
             - name: DB_MAX_OVERFLOW
               value: "{{ .Values.voteApi.dbMaxOverflow }}"
+            - name: APP_VERSION
+              value: "{{ .Values.voteApi.image.tag }}"
+            - name: CONFERENCE
+              value: "{{ .Values.voteApi.conference }}"
           resources:
             {{- toYaml .Values.voteApi.resources | nindent 12 }}
           livenessProbe:

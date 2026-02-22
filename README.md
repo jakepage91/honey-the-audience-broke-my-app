@@ -1,6 +1,6 @@
 # Honey, the Audience Broke My App
 
-A conference polling application designed for a live debugging demo. The audience votes on a poll, unknowingly triggers a connection leak bug, and watches the app fail in real-time. The speaker then debugs and fixes it live using mirrord.
+A conference polling application designed for a live debugging demo. The audience votes on a poll, unknowingly triggers an unbounded cache bug, and watches the app fail in real-time. The speaker then debugs and fixes it live using mirrord.
 
 ## What This Is
 
@@ -43,8 +43,6 @@ docker-compose up -d
 # Results dashboard: http://localhost:8000/results
 ```
 
-**Note:** The connection leak bug only manifests against the seeded 500k-row database in Kubernetes. Local docker-compose is for basic functional testing.
-
 ## Deploying to Kubernetes
 
 ### Prerequisites
@@ -64,23 +62,19 @@ cp my-secrets.yaml.example my-secrets.yaml
 Then deploy:
 
 ```bash
-helm upgrade --install conference-app oci://ghcr.io/jakepage91/conference-app \
-  --version 1.0.0 \
+helm upgrade --install conference-app helm/conference-app \
   --namespace conference-app \
-  --create-namespace \
   -f my-secrets.yaml
 ```
-
-> **Note:** The seed job inserts 500,000 rows into PostgreSQL and runs as a post-install hook. It takes ~60-90 seconds to complete. If it fails due to a transient error, delete the job and rerun the same `helm upgrade --install` command.
 
 ### Build and Push the Image
 
 The image is published to GitHub Container Registry:
 
 ```bash
-# Build for linux/amd64 (required for Civo/most cloud clusters)
+# Build for linux/amd64 (required for most cloud clusters)
 docker buildx build --platform linux/amd64 --push \
-  -t ghcr.io/<your-gh-username>/vote-api:v1.0.0 .
+  -t ghcr.io/<your-gh-username>/vote-api:v1.13.0 .
 ```
 
 If the package is private, create an imagePullSecret in the cluster before deploying:
@@ -130,29 +124,13 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 3. Set the **A record** to your ingress controller's external IP
 4. Save
 
-The current deployment points to `212.2.246.153` (Civo cluster `silent-snow-29182266`).
-
 ### 3. Verify DNS Propagation
 
 ```bash
-# Check if DNS is resolving
 dig honey-we-have-a-problem.freeddns.org
-
-# Or
-nslookup honey-we-have-a-problem.freeddns.org
 ```
 
 FreeDNS typically propagates in **under 5 minutes** since it uses low TTLs for dynamic DNS.
-
-### Timing Recommendations
-
-| When | Task |
-|------|------|
-| Day before | Set up cluster, ingress controller, and DNS |
-| 1 hour before | Verify everything works, do a test vote |
-| 15 min before | Final check |
-
-If your cluster IP changes, just update the A record in FreeDNS — changes are near-instant.
 
 ## Slack Alerting Setup
 
@@ -199,30 +177,34 @@ This gets picked up automatically when you run `helm upgrade --install ... -f my
 
 2. **Phase 2 - Trigger the Bug**
    - Ask audience to scan the RIGHT QR code (with referral parameter)
-   - After ~5 votes with referral, the app starts timing out
-   - Results dashboard stops updating
-   - Slack alerts fire
+   - After 10 votes with referral codes, the service degrades
+   - All subsequent referral votes return 503 errors
+   - Slack alerts fire (ReferralCacheExhausted)
+   - **Key point**: The pod stays healthy — health checks pass, but the service is degraded
 
 3. **Phase 3 - Debug with mirrord**
    - Show the error in logs/metrics
-   - Use mirrord to connect locally to the cluster
-   - Debug and identify the connection leak
-   - Show the fix
+   - Use mirrord to steal production traffic to your local machine
+   - Identify the unbounded cache in `app/referral.py`
+   - Apply the fix locally (remove the cache)
+   - All 15+ requests now succeed through mirrord
 
 ### Expected Timing
 
-- 3 referral votes → connections start leaking (pool size is 3)
-- ~1-2 seconds after pool exhaustion → Slack alert fires (Prometheus scrapes every 1 second, alert fires after 1s)
-- Error rate goes to 100% → all requests hang or timeout
+- First 10 referral votes → succeed normally
+- Vote 11+ with referral → 503 "referral cache exhausted"
+- Votes without referral → always work fine (the bug only affects referral path)
 
 ### Between Talks (Resetting for Next Session)
 
-Click the **"RESET SESSION"** button in the top-right of the results dashboard to:
-- Clear all votes from the database
-- Reset Redis cache to zero
-- Keep the 500k referral_partners table intact (no need to re-seed)
+Reset the pod to clear the in-memory cache:
 
-This takes ~1 second and prepares the app for your next demo session.
+```bash
+kubectl rollout restart deployment/vote-api -n conference-app
+kubectl rollout status deployment/vote-api -n conference-app --timeout=60s
+```
+
+Also click the **"RESET SESSION"** button on the results dashboard to clear vote counts.
 
 ## Debugging with mirrord
 
@@ -238,38 +220,61 @@ curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/i
 
 ### Connect to the Cluster
 
+**Option 1: VS Code** (recommended for demo)
+
+Use the "Python: FastAPI with mirrord" launch configuration — press F5 in VS Code. The `.mirrord/mirrord.json` config is auto-detected.
+
+**Option 2: CLI**
+
 ```bash
-# From the project root
-mirrord exec -f mirrord.json python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+mirrord exec -f mirrord.json -- ./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 This will:
-- Intercept traffic from the vote-api pods
-- Use the cluster's environment variables (DATABASE_URL, REDIS_URL)
-- Let you debug locally while receiving real traffic
+- Steal all traffic from the vote-api pod
+- Use the cluster's environment variables (DATABASE_URL, REDIS_URL, CONFERENCE, etc.)
+- Let you debug locally while receiving real production traffic
 
 ### The Fix
 
-The bug is in `app/referral.py`. The connection is not properly closed when an exception occurs:
+The bug is in `app/referral.py`. An unbounded list grows with every referral validation:
 
 ```python
-# Buggy code (current)
+# Buggy code (deployed)
+_referral_cache = []  # Never cleared, grows forever
+
 def validate_referral(code: str):
-    conn = engine.connect()
-    result = conn.execute(...)
-    partner = result.scalar_one_or_none()
-    conn.close()  # Never reached if query times out!
-    return partner
+    cache_entry = {"code": code, "timestamp": time.time(), "validated": True}
+    _referral_cache.append(cache_entry)  # Grows on EVERY request
+
+    if len(_referral_cache) > 10:
+        raise RuntimeError("Service degraded: referral cache exhausted")
+    # ...
 ```
 
 ```python
-# Fixed code
+# Fixed code (apply locally, test via mirrord)
 def validate_referral(code: str):
-    with engine.connect() as conn:  # Context manager ensures cleanup
-        result = conn.execute(...)
-        partner = result.scalar_one_or_none()
-        return partner
+    with engine.connect() as conn:
+        result = conn.execute(
+            select(ReferralPartner).where(ReferralPartner.code == code)
+        )
+        return result.scalar_one_or_none()
 ```
+
+**Important**: The fix is only applied locally during the demo. The cluster always runs the buggy version so the demo is always ready.
+
+## Conference Branding
+
+The app supports per-conference branding via the `CONFERENCE` environment variable:
+
+```yaml
+# helm/conference-app/values.yaml
+voteApi:
+  conference: "sreday"  # Options: sreday, kubecon, devopsdays
+```
+
+This displays the conference logo on the voting and results pages, and a welcome banner for attendees.
 
 ## Project Structure
 
@@ -286,11 +291,9 @@ honey-the-audience-broke-my-app/
 ├── scripts/
 │   ├── seed_referral_data.py
 │   └── init_db.sql
-├── tests/
 ├── helm/conference-app/     # Kubernetes manifests
-├── mirrord.json             # mirrord config (steal mode)
-├── mirrord-mirror.json      # mirrord config (mirror mode)
-├── my-secrets.yaml.example  # secrets template (copy to my-secrets.yaml)
+├── .mirrord/mirrord.json    # mirrord config for VS Code (steal mode)
+├── mirrord.json             # mirrord config for CLI (steal mode)
 ├── Dockerfile
 ├── docker-compose.yml
 └── README.md
@@ -302,65 +305,43 @@ honey-the-audience-broke-my-app/
 
 - `http_requests_total{method, endpoint, status}` - Request counter
 - `http_request_duration_seconds{method, endpoint}` - Request latency histogram
-- `db_pool_checked_out` - Connections currently in use
+- `referral_cache_exhausted_total` - Cache exhaustion error counter
+- `db_pool_checked_out` - DB connections currently in use
 - `db_pool_size` - Total pool size
 
 ### Alert Rules
 
 - **VoteAPIErrorRateHigh**: Error rate > 50% for 30s
 - **VoteAPIHighLatency**: P95 latency > 2s for 1m
-- **DatabasePoolExhausted**: All connections in use for 1s (pool size: 3)
+- **ReferralCacheExhausted**: Cache exhaustion errors detected (fires within 5s, keeps firing for 5m)
 - **VoteAPIDown**: API unreachable for 10s
-
-## Development
-
-### Run Tests
-
-```bash
-pip install -r requirements.txt -r requirements-dev.txt
-pytest tests/ -v
-```
-
-### Lint
-
-```bash
-ruff check .
-```
 
 ---
 
 <details>
 <summary><strong>Spoiler: The Bug Explained</strong></summary>
 
-### The Connection Leak
+### The Unbounded Cache
 
-The `referral_partners` table has **500,000 rows** with **no index** on the `code` column. When a referral code is validated:
+The `validate_referral()` function in `app/referral.py` appends to a module-level list on every call:
 
-1. The query does a full table scan
-2. PostgreSQL is configured with a **100ms** `statement_timeout`
-3. The query exceeds the timeout and PostgreSQL kills it
-4. An exception is raised in Python
-5. `conn.close()` is never called because it's after the exception
-6. The connection is returned to the pool in a broken state (or leaked entirely)
+1. Each referral validation creates a dict with the code, timestamp, and validation status
+2. This dict is appended to `_referral_cache` — a list that is **never cleared**
+3. After 10 entries, the function raises a `RuntimeError` (simulating OOM from memory pressure)
+4. Once triggered, **every subsequent referral request fails** because the list only grows
 
-The connection pool is configured with:
-- `pool_size=3`
-- `max_overflow=0`
-- `pool_recycle=-1` (never auto-recycle)
-- `pool_pre_ping=False` (don't validate before use)
+In real production, this pattern would cause gradual memory growth until OOM. For the demo, we fail fast after 10 entries to make it obvious and reproducible.
 
-After 3 leaked connections, every subsequent request blocks indefinitely waiting for a connection that will never come back.
+### Why It's Hard to Catch
 
-### Why Tests Pass
-
-The unit tests use mocks and a small test database. The bug is timing-dependent and only manifests when:
-1. The referral_partners table has 500k rows
-2. The statement_timeout is set to 100ms
-3. Multiple referral requests are made in quick succession
+- The pod stays healthy (health/ready checks pass)
+- Votes without referral codes work fine
+- You'd never hit 10+ referral requests in local testing
+- The cache is module-level state — invisible unless you read the code carefully
 
 ### The Fix
 
-Use a context manager:
+Remove the unbounded cache entirely — just query the database directly:
 
 ```python
 def validate_referral(code: str):
@@ -370,8 +351,6 @@ def validate_referral(code: str):
         )
         return result.scalar_one_or_none()
 ```
-
-The context manager ensures `conn.close()` is called even if an exception occurs.
 
 </details>
 

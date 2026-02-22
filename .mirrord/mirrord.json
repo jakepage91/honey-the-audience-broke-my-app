@@ -1,13 +1,28 @@
 {
   "target": {
-    "path": "deployment/vote-api",
+    "path": {
+      "deployment": "vote-api"
+    },
     "namespace": "conference-app"
   },
   "feature": {
     "network": {
-      "incoming": "steal"
+      "incoming": {
+        "mode": "steal"
+      },
+      "outgoing": true,
+      "dns": true
     },
-    "env": true,
-    "fs": "read"
-  }
+    "env": {
+      "include": "DATABASE_URL;REDIS_URL;POSTGRES_USER;POSTGRES_PASSWORD;POSTGRES_DB;DB_POOL_SIZE;DB_MAX_OVERFLOW;APP_VERSION;CONFERENCE",
+      "override": {
+        "APP_VERSION": "dev-mirrord"
+      }
+    },
+    "fs": {
+      "mode": "local"
+    }
+  },
+  "operator": false,
+  "kubeconfig": "~/.kube/config"
 }

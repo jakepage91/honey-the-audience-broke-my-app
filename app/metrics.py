@@ -31,6 +31,11 @@ db_pool_timeout_total = Counter(
     "Total database connection pool timeout errors"
 )
 
+referral_cache_exhausted_total = Counter(
+    "referral_cache_exhausted_total",
+    "Total referral cache exhaustion errors"
+)
+
 
 def get_metrics_response() -> Response:
     return Response(

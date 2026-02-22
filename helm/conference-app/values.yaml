@@ -4,7 +4,7 @@ voteApi:
   replicaCount: 1
   image:
     repository: ghcr.io/jakepage91/vote-api
-    tag: "v1.9.1"
+    tag: "v1.13.0"
     pullPolicy: Always
     pullSecrets:
       - name: ghcr-pull-secret
@@ -17,6 +17,7 @@ voteApi:
       memory: "256Mi"
   dbPoolSize: 3
   dbMaxOverflow: 0
+  conference: "sreday"  # Conference logo to display (sreday, kubecon, devopsdays)
 
 redis:
   image:
@@ -43,7 +44,7 @@ postgresql:
     limits:
       cpu: "500m"
       memory: "512Mi"
-  statementTimeout: "100ms"
+  statementTimeout: "5s"
   seedData: true
   storage:
     size: 10Gi

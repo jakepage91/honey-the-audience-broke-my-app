@@ -10,42 +10,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let currentChoice = null;
 
-    // Fetch and display version
-    async function fetchVersion() {
+    // Conference config - add new conferences here
+    const conferenceConfig = {
+        'sreday': { logo: '/static/logos/sreday.png', name: 'SREDay' },
+        'kubecon': { logo: '/static/logos/kubecon.png', name: 'KubeCon' },
+        'devopsdays': { logo: '/static/logos/devopsdays.png', name: 'DevOpsDays' }
+    };
+
+    // Load conference branding (logo + welcome banner)
+    function loadConferenceBranding(conf) {
+        if (!conf || !conferenceConfig[conf]) return;
+
+        const config = conferenceConfig[conf];
+
+        // Show logo
+        const logoEl = document.getElementById('conference-logo');
+        const logoImg = document.getElementById('logo-img');
+        logoImg.src = config.logo;
+        logoImg.alt = config.name + ' Conference';
+        logoEl.style.display = 'block';
+
+        // Show welcome banner
+        const bannerEl = document.getElementById('welcome-banner');
+        const nameEl = document.getElementById('conference-name');
+        nameEl.textContent = config.name;
+        bannerEl.style.display = 'block';
+    }
+
+    // Fetch version and conference config from server
+    async function fetchConfig() {
         try {
             const response = await fetch('/version');
             if (response.ok) {
                 const data = await response.json();
                 versionEl.textContent = 'v' + data.version;
+
+                // URL param overrides server config
+                const params = new URLSearchParams(window.location.search);
+                const conf = params.get('conf') || data.conference;
+                loadConferenceBranding(conf);
             }
         } catch (err) {
-            console.error('Failed to fetch version:', err);
+            console.error('Failed to fetch config:', err);
         }
     }
 
-    fetchVersion();
-
-    // Conference logo support
-    function loadConferenceLogo() {
-        const params = new URLSearchParams(window.location.search);
-        const conf = params.get('conf');
-        const logoEl = document.getElementById('conference-logo');
-        const logoImg = document.getElementById('logo-img');
-
-        const conferenceLogos = {
-            'sreday': '/static/logos/sreday.png',
-            'kubecon': '/static/logos/kubecon.png',
-            'devopsdays': '/static/logos/devopsdays.png'
-        };
-
-        if (conf && conferenceLogos[conf]) {
-            logoImg.src = conferenceLogos[conf];
-            logoImg.alt = conf.toUpperCase() + ' Conference';
-            logoEl.style.display = 'block';
-        }
-    }
-
-    loadConferenceLogo();
+    fetchConfig();
 
     const choiceLabels = {
         'print': 'Add more print statements',
@@ -117,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 if (response.status === 503) {
-                    showError('⚠️ DATABASE CONNECTION POOL EXHAUSTED! All connections are in use due to the referral bug. The app is broken!');
+                    showError('⚠️ SERVICE DEGRADED! Referral cache exhausted - the app has a memory leak bug!');
                 } else if (response.status === 500) {
                     showError('⚠️ SERVER ERROR: ' + errorDetail);
                 } else {
