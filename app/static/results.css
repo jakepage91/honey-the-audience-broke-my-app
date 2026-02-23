@@ -173,6 +173,32 @@ body {
     animation: pulse 1s infinite;
 }
 
+.vote-btn {
+    background: var(--metalbear-purple);
+    color: white;
+    border: 2px solid var(--metalbear-yellow);
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(117, 109, 243, 0.3);
+    text-decoration: none;
+}
+
+.vote-btn:hover {
+    background: var(--metalbear-yellow);
+    color: var(--metalbear-black);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(117, 109, 243, 0.5);
+}
+
+.vote-btn:active {
+    transform: translateY(0);
+}
+
 .reset-btn {
     background: var(--metalbear-yellow);
     color: var(--metalbear-black);
@@ -256,7 +282,9 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
-    min-width: 350px;
+    width: 420px;
+    min-width: 420px;
+    max-width: 420px;
 }
 
 .result-icon {
@@ -491,7 +519,9 @@ body {
     }
 
     .result-label {
-        min-width: 280px;
+        width: 320px;
+        min-width: 320px;
+        max-width: 320px;
     }
 
     .result-text {

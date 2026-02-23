@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/version');
             if (response.ok) {
                 const data = await response.json();
-                versionEl.textContent = 'v' + data.version;
+                versionEl.textContent = data.version.startsWith('v') ? data.version : 'v' + data.version;
 
                 // URL param overrides server config
                 const params = new URLSearchParams(window.location.search);
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showConfirmation(choice) {
-        confirmChoice.textContent = '"' + choiceLabels[choice] + '"';
+        confirmChoice.textContent = choiceLabels[choice];
         options.style.display = 'none';
         confirmation.style.display = 'flex';
     }
