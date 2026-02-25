@@ -4,8 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionEl = document.getElementById('version');
     const errorBanner = document.getElementById('error-banner');
     const errorText = document.getElementById('error-text');
-    const resetBtn = document.getElementById('reset-btn');
-
     let errorCount = 0;
 
     function showError(message) {
@@ -133,38 +131,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fetchInitialResults();
     connectSSE();
-
-    // Reset session button
-    resetBtn.addEventListener('click', async function() {
-        if (!confirm('Reset all votes for a new demo session? This cannot be undone.')) {
-            return;
-        }
-
-        resetBtn.disabled = true;
-        resetBtn.textContent = 'RESETTING...';
-
-        try {
-            const response = await fetch('/admin/reset?confirm=yes', {
-                method: 'POST'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                showError('Session reset! Reloading...');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                const error = await response.json();
-                showError('Reset failed: ' + (error.detail || 'Unknown error'));
-                resetBtn.disabled = false;
-                resetBtn.textContent = 'RESET SESSION';
-            }
-        } catch (err) {
-            console.error('Reset error:', err);
-            showError('Reset failed: Network error');
-            resetBtn.disabled = false;
-            resetBtn.textContent = 'RESET SESSION';
-        }
-    });
 });

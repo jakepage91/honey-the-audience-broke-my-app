@@ -198,6 +198,12 @@ async def version():
     return {"version": VERSION, "conference": CONFERENCE}
 
 
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page():
+    with open(os.path.join(static_dir, "admin.html"), "r") as f:
+        return HTMLResponse(content=f.read())
+
+
 @app.post("/admin/reset")
 async def reset_session(confirm: str = None):
     """Reset the database for a new demo session.

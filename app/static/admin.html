@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - NYC Poll '26</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --metalbear-purple: #756DF3;
+            --metalbear-yellow: #FFCB7D;
+            --metalbear-black: #000000;
+            --metalbear-light-grey: #FAFAFD;
+        }
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--metalbear-light-grey);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .admin-card {
+            background: white;
+            border: 2px solid var(--metalbear-purple);
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(117, 109, 243, 0.2);
+        }
+        h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--metalbear-purple);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.85rem;
+        }
+        .reset-btn {
+            background: var(--metalbear-yellow);
+            color: var(--metalbear-black);
+            border: 2px solid var(--metalbear-purple);
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .reset-btn:hover {
+            background: var(--metalbear-purple);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(117, 109, 243, 0.4);
+        }
+        .reset-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .restart-btn {
+            background: var(--metalbear-purple);
+            color: white;
+            border: 2px solid var(--metalbear-yellow);
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 12px;
+        }
+        .restart-btn:hover {
+            background: var(--metalbear-yellow);
+            color: var(--metalbear-black);
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .status.success {
+            background: #E8F5E9;
+            color: #2E7D32;
+            display: block;
+        }
+        .status.error {
+            background: #FFEBEE;
+            color: #C62828;
+            display: block;
+        }
+        .links {
+            margin-top: 20px;
+            font-size: 0.8rem;
+        }
+        .links a {
+            color: var(--metalbear-purple);
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-card">
+        <h1>ADMIN PANEL</h1>
+        <p>Reset votes and cache for a new demo session. This clears all votes but keeps referral partners intact.</p>
+        <button class="reset-btn" id="reset-btn">RESET SESSION</button>
+        <button class="restart-btn" id="restart-btn" onclick="window.location.href='/results'">VIEW RESULTS</button>
+        <div class="status" id="status"></div>
+        <div class="links">
+            <a href="/">Vote</a>
+            <a href="/results">Results</a>
+        </div>
+    </div>
+    <script>
+        const resetBtn = document.getElementById('reset-btn');
+        const status = document.getElementById('status');
+
+        resetBtn.addEventListener('click', async function() {
+            if (!confirm('Reset all votes? This cannot be undone.')) return;
+
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'RESETTING...';
+            status.className = 'status';
+            status.style.display = 'none';
+
+            try {
+                const response = await fetch('/admin/reset?confirm=yes', { method: 'POST' });
+                if (response.ok) {
+                    status.textContent = 'Session reset complete. All votes cleared.';
+                    status.className = 'status success';
+                } else {
+                    const error = await response.json();
+                    status.textContent = 'Failed: ' + (error.detail || 'Unknown error');
+                    status.className = 'status error';
+                }
+            } catch (err) {
+                status.textContent = 'Network error: ' + err.message;
+                status.className = 'status error';
+            }
+
+            resetBtn.disabled = false;
+            resetBtn.textContent = 'RESET SESSION';
+        });
+    </script>
+</body>
+</html>
