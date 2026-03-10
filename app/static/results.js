@@ -17,21 +17,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Conference config - add new conferences here
     const conferenceConfig = {
-        'sreday': { logo: '/static/logos/sreday.png', name: 'SREDay' },
-        'kubecon': { logo: '/static/logos/kubecon.png', name: 'KubeCon' },
-        'devopsdays': { logo: '/static/logos/devopsdays.png', name: 'DevOpsDays' }
+        'sreday': { logos: ['/static/logos/sreday.png'], city: 'NYC', greeting: 'SREDay' },
+        'kubecon': { logos: ['/static/logos/kubecon.png'], city: 'NYC', greeting: 'KubeCon' },
+        'devopsdays': { logos: ['/static/logos/devopsdays.png'], city: 'NYC', greeting: 'DevOpsDays' },
+        'lisbon': { logos: ['/static/logos/cloud-native-lisbon.png', '/static/logos/aws-ug-lisbon.jpeg'], city: 'Lisbon', greeting: 'Lisbon' }
     };
 
-    // Load conference logo
+    // Load conference logo(s)
     function loadConferenceLogo(conf) {
         if (!conf || !conferenceConfig[conf]) return;
 
         const config = conferenceConfig[conf];
         const logoEl = document.getElementById('conference-logo');
-        const logoImg = document.getElementById('logo-img');
-        logoImg.src = config.logo;
-        logoImg.alt = config.name + ' Conference';
-        logoEl.style.display = 'block';
+        logoEl.innerHTML = '';
+        config.logos.forEach(function(src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = config.greeting + ' Conference';
+            img.className = 'logo-img';
+            logoEl.appendChild(img);
+        });
+        logoEl.style.display = 'flex';
+
+        // Update page title with city
+        if (config.city) {
+            document.title = "Live Results - " + config.city + " Poll '26";
+        }
     }
 
     // Fetch version and conference config from server
