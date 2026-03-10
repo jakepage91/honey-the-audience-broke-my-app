@@ -47,7 +47,7 @@ def random_date():
 
 
 def seed_database():
-    print(f"Connecting to database...")
+    print("Connecting to database...")
 
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
@@ -74,7 +74,6 @@ def seed_database():
     total_inserted = 0
 
     first_batch = [(KNOWN_CODE, KNOWN_NAME, datetime.now())]
-    codes_needed = BATCH_SIZE - 1
 
     while len(first_batch) < BATCH_SIZE:
         code = generate_random_code()

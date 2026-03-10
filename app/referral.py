@@ -1,5 +1,6 @@
 import time
 from sqlalchemy import select
+
 from app.database import engine
 from app.models import ReferralPartner
 
