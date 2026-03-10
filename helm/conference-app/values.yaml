@@ -4,7 +4,7 @@ voteApi:
   replicaCount: 1
   image:
     repository: ghcr.io/jakepage91/vote-api
-    tag: "v1.16.0"
+    tag: "v1.17.0"
     pullPolicy: Always
     pullSecrets:
       - name: ghcr-pull-secret
@@ -17,7 +17,7 @@ voteApi:
       memory: "256Mi"
   dbPoolSize: 3
   dbMaxOverflow: 0
-  conference: "sreday"  # Conference logo to display (sreday, kubecon, devopsdays)
+  conference: "lisbon"  # Conference branding key (sreday, kubecon, devopsdays, lisbon)
 
 redis:
   image:

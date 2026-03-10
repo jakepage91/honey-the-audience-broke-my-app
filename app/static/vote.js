@@ -11,29 +11,45 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentChoice = null;
 
     // Conference config - add new conferences here
+    // logos: array of logo paths (stacked top to bottom)
+    // city: used in page title ("<CITY> POLL '26")
+    // greeting: shown in welcome banner ("Hello <greeting>!")
     const conferenceConfig = {
-        'sreday': { logo: '/static/logos/sreday.png', name: 'SREDay' },
-        'kubecon': { logo: '/static/logos/kubecon.png', name: 'KubeCon' },
-        'devopsdays': { logo: '/static/logos/devopsdays.png', name: 'DevOpsDays' }
+        'sreday': { logos: ['/static/logos/sreday.png'], city: 'NYC', greeting: 'SREDay' },
+        'kubecon': { logos: ['/static/logos/kubecon.png'], city: 'NYC', greeting: 'KubeCon' },
+        'devopsdays': { logos: ['/static/logos/devopsdays.png'], city: 'NYC', greeting: 'DevOpsDays' },
+        'lisbon': { logos: ['/static/logos/cloud-native-lisbon.png', '/static/logos/aws-ug-lisbon.jpeg'], city: 'Lisbon', greeting: 'Lisbon' }
     };
 
-    // Load conference branding (logo + welcome banner)
+    // Load conference branding (logos + welcome banner + title)
     function loadConferenceBranding(conf) {
         if (!conf || !conferenceConfig[conf]) return;
 
         const config = conferenceConfig[conf];
 
-        // Show logo
+        // Show logos (supports multiple, stacked vertically)
         const logoEl = document.getElementById('conference-logo');
-        const logoImg = document.getElementById('logo-img');
-        logoImg.src = config.logo;
-        logoImg.alt = config.name + ' Conference';
-        logoEl.style.display = 'block';
+        logoEl.innerHTML = '';
+        config.logos.forEach(function(src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = config.greeting + ' Conference';
+            img.className = 'logo-img';
+            logoEl.appendChild(img);
+        });
+        logoEl.style.display = 'flex';
+
+        // Update page title with city
+        if (config.city) {
+            const titleEl = document.querySelector('.title');
+            titleEl.textContent = config.city.toUpperCase() + " POLL '26";
+            document.title = config.city + " Poll '26";
+        }
 
         // Show welcome banner
         const bannerEl = document.getElementById('welcome-banner');
         const nameEl = document.getElementById('conference-name');
-        nameEl.textContent = config.name;
+        nameEl.textContent = config.greeting;
         bannerEl.style.display = 'block';
     }
 

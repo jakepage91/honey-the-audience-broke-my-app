@@ -75,9 +75,12 @@ body {
     box-shadow: 0 4px 12px rgba(117, 109, 243, 0.3);
     transform: rotate(3deg);
     border: 2px solid var(--metalbear-purple);
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
 
-.conference-logo-bottom img {
+.conference-logo-bottom .logo-img {
     display: block;
     max-width: 120px;
     max-height: 80px;
