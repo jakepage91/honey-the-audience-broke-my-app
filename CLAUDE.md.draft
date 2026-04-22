@@ -1,0 +1,125 @@
+# Conference Demo App — Claude Notes
+
+## Critical rules (never violate)
+
+- **NEVER modify `app/referral.py`.** The unbounded-cache bug is intentional demo content — the cluster must always keep the buggy version. Any fix is applied *locally via mirrord only*, never committed or PR'd.
+- When building container images for the cluster, always use `docker buildx build --platform linux/amd64` (arm64 Mac → amd64 cluster).
+
+## Auto-trigger rules
+
+- When the user describes a feature request or change to the app ("add X", "implement Y", "I want the app to do Z"), always follow the **Feature workflow** below before opening a PR. This ensures the feature is validated against real cluster infrastructure (Postgres, Redis) via mirrord — not a local mock.
+
+## Feature workflow — mirrord + e2e testing
+
+Every feature MUST go through this workflow before a PR is opened. No exceptions.
+
+### Step 1: mirrord config
+
+- Check if `.mirrord/mirrord-e2e.json` already exists. If it does, use it. If not, use the `/mirrord:mirrord-config` skill to create one.
+- Target: `deployment/vote-api` in the `conference-app` namespace.
+- Use **steal mode** with an HTTP header filter matching: `baggage:\s*[^\n]*\bmirrord=e2e\b`
+  - This ensures only Playwright test traffic is stolen, not traffic from real audience browsers hitting the same ingress.
+- Enable `outgoing: true` so the local service can reach the cluster's Postgres and Redis.
+- Enable `fs.mode: "read"` so the local process can read remote config/static files if needed.
+- Include env vars: `DATABASE_URL;REDIS_URL;POSTGRES_USER;POSTGRES_PASSWORD;POSTGRES_DB;DB_POOL_SIZE;DB_MAX_OVERFLOW;APP_VERSION`.
+- Save to `.mirrord/mirrord-e2e.json` — distinct from the plain `.mirrord/mirrord.json` used for the live-fix demo.
+
+### Step 2: Implement the feature
+
+- Write code changes to the **backend FastAPI app** under `app/`.
+- Do **NOT** modify the static frontend (`app/static/*.html`, `*.js`, `*.css`) in the same feature. The cluster serves those directly, and audience browsers won't carry the `baggage: mirrord=e2e` header — so your local changes won't be visible to them. Frontend changes belong in a separate PR that ships via normal deploy.
+- **Persistence:** if the feature needs state, use Postgres via SQLAlchemy (see `app/database.py`, `app/models.py`). Add a new model class and let `Base.metadata.create_all` pick it up on startup. For seed data, extend `helm/conference-app/templates/postgres-seed-job.yaml`.
+- **New endpoints:** add them to `app/main.py` alongside the existing `/vote`, `/votes`, `/stream`.
+
+### Step 3: Generate Playwright e2e tests
+
+- For **every** feature, create or update Playwright e2e tests in `e2e/`.
+- Tests run against the **real ingress**, not localhost: `http://honey-we-have-a-problem.freeddns.org`.
+- **Use API-level tests** (Playwright's `request` context), not browser/page tests. The backend runs locally via mirrord; the cluster-served frontend won't reflect your local changes.
+- Tests MUST NOT mock Postgres, Redis, or any other backend — the whole point is testing against real cluster infrastructure.
+- **Async flows (Redis pub/sub, SSE, etc.)**: never use a fixed `sleep` to wait for propagation. Always use a poll/retry loop (e.g., retry up to 10 times with 2-second intervals) checking for the expected state.
+- The Playwright config (`e2e/playwright.config.ts`) must inject the `baggage: mirrord=e2e` header on every request via `extraHTTPHeaders` so mirrord routes matching traffic to your local service.
+- Name test files descriptively: `e2e/<feature-name>.spec.ts`.
+
+### Step 4: Run e2e tests with mirrord
+
+1. Start the modified backend locally with mirrord (background is fine):
+   ```
+   mirrord exec -f .mirrord/mirrord-e2e.json -- ./venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+2. **Sanity-curl before running Playwright.** Hit the new endpoint once through the real ingress with the baggage header:
+   ```
+   curl -H 'baggage: mirrord=e2e' http://honey-we-have-a-problem.freeddns.org/<path>
+   ```
+   This catches schema / TZ / routing bugs in one second instead of a 30s Playwright timeout. Only run the full suite once this returns a sensible response.
+3. Run Playwright:
+   ```
+   cd e2e && npm run test
+   ```
+4. **Do NOT open a PR until all e2e tests pass.** If tests fail, fix the code (not the tests) and rerun.
+5. **Do NOT tear down mirrord after tests pass.** Leave the local process running and ask the user something like "Have you had a chance to check this in the browser?" Only stop mirrord and move to Step 5 once the user confirms — this gives the audience a chance to see the new behaviour via steal mode before the PR lands.
+
+### Step 5: Open PR
+
+- Only after tests pass **and the user has confirmed the browser check**, open a PR with a summary of the feature and a note that e2e tests pass against the real cluster via mirrord.
+- If the PR would touch `app/referral.py`, **stop and abort** — that file is frozen (see Critical rules).
+
+## Common pitfalls
+
+- **Postgres timestamp TZ.** `votes.created_at` is `TIMESTAMP` (naive) written with `datetime.utcnow()`. Any SQL that derives epoch seconds from it MUST use `EXTRACT(EPOCH FROM (created_at AT TIME ZONE 'UTC'))` — plain `EXTRACT(EPOCH FROM created_at)` applies the Postgres server's TZ to the naive value and silently skews bucket boundaries. On the Python side use `datetime.now(timezone.utc).timestamp()`, not `datetime.utcnow().timestamp()` — the latter also reinterprets a naive datetime as local time.
+- **Playwright timeout.** Default test timeout is 30s. A poll loop of 10 × 2s will blow past 30s once network latency is added. Either call `test.setTimeout(60_000)` explicitly, or keep the total poll budget under ~15s (e.g. 15 × 1s).
+
+## Architecture
+
+**Framework:** FastAPI (Python 3.12) + SQLAlchemy + Redis
+**Deployment:** Helm chart at `helm/conference-app/`, namespace `conference-app`.
+**Ingress:** `http://honey-we-have-a-problem.freeddns.org` (NGINX + cert-manager).
+
+### App layout
+
+| File | Purpose |
+|---|---|
+| `app/main.py` | FastAPI app: routes, middleware, lifespan. |
+| `app/database.py` | SQLAlchemy engine + session. Pool intentionally small (`DB_POOL_SIZE=3`, `DB_MAX_OVERFLOW=0`). |
+| `app/models.py` | ORM models: `Vote`, `ReferralPartner`. |
+| `app/redis_client.py` | Redis counter helpers + pub/sub for SSE streams. |
+| `app/referral.py` | **Frozen — do not edit.** Contains the intentional unbounded-cache bug. |
+| `app/metrics.py` | Prometheus middleware + custom metrics. |
+| `app/static/` | Pre-built HTML/CSS/JS for `/` (vote page) and `/results`. |
+
+### Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | Voting page (static HTML). |
+| `GET` | `/results` | Live results page. |
+| `POST` | `/vote` | Submit a vote: `{choice, referral?}`. |
+| `GET` | `/votes` | Current vote counts by choice. |
+| `GET` | `/stream` | SSE stream of live vote updates. |
+| `GET` | `/metrics` | Prometheus metrics. |
+| `GET` | `/health`, `/ready` | Health/readiness checks. |
+| `GET` | `/version` | App version + conference. |
+| `POST` | `/admin/reset?confirm=yes` | Wipe votes + Redis for a fresh demo session. |
+
+### Data model
+
+```python
+class Vote:
+    id: int
+    choice: str            # one of VALID_CHOICES
+    referral_code: str | None
+    created_at: datetime
+
+class ReferralPartner:
+    id: int
+    code: str              # e.g. "conf-partner-2026"
+    name: str
+    created_at: datetime
+```
+
+### Env vars (set via Helm values + secrets)
+
+- `DATABASE_URL` — Postgres connection string
+- `REDIS_URL` — Redis connection string
+- `DB_POOL_SIZE`, `DB_MAX_OVERFLOW` — SQLAlchemy pool tuning (small by design)
+- `APP_VERSION`, `CONFERENCE` — surfaced on `/version` and in the UI
