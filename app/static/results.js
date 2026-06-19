@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
         'sreday': { logos: ['/static/logos/sreday.png'], city: 'NYC', greeting: 'SREDay' },
         'kubecon': { logos: ['/static/logos/kubecon.png'], city: 'NYC', greeting: 'KubeCon' },
         'devopsdays': { logos: ['/static/logos/devopsdays.png'], city: 'NYC', greeting: 'DevOpsDays' },
-        'lisbon': { logos: ['/static/logos/cloud-native-lisbon.png', '/static/logos/aws-ug-lisbon.jpeg'], city: 'Lisbon', greeting: 'Lisbon' }
+        'lisbon': { logos: ['/static/logos/cloud-native-lisbon.png', '/static/logos/aws-ug-lisbon.jpeg'], city: 'Lisbon', greeting: 'Lisbon' },
+        'dwx': { logos: ['/static/logos/dwx.png'], city: 'Mannheim', greeting: 'DWX' },
+        'munich': { logos: ['/static/logos/cloud-native-munich.png'], city: 'Munich', greeting: 'Cloud Native Summit Munich' }
     };
 
     // Load conference logo(s)
