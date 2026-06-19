@@ -64,3 +64,6 @@ logs/
 # Database
 *.db
 *.sqlite3
+
+# Private ops notes
+CLUSTER_OPS.md
