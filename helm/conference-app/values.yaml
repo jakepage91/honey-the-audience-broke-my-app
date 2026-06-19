@@ -17,7 +17,7 @@ voteApi:
       memory: "256Mi"
   dbPoolSize: 3
   dbMaxOverflow: 0
-  conference: "lisbon"  # Conference branding key (sreday, kubecon, devopsdays, lisbon)
+  conference: "lisbon"  # Conference branding key (sreday, kubecon, devopsdays, lisbon, dwx, munich)
 
 redis:
   image:
