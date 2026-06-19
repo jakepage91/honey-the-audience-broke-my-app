@@ -4,7 +4,7 @@ voteApi:
   replicaCount: 1
   image:
     repository: ghcr.io/jakepage91/vote-api
-    tag: "v1.17.0"
+    tag: "v1.20.1"
     pullPolicy: Always
     pullSecrets:
       - name: ghcr-pull-secret
@@ -58,10 +58,10 @@ prometheus:
   resources:
     requests:
       cpu: "100m"
-      memory: "256Mi"
+      memory: "128Mi"
     limits:
       cpu: "500m"
-      memory: "512Mi"
+      memory: "256Mi"
   scrapeInterval: "1s"
 
 alertmanager:
@@ -81,7 +81,7 @@ alertmanager:
 ingress:
   enabled: true
   className: nginx
-  host: honey-we-have-a-problem.freeddns.org
+  host: honey-we-have-a-problem.crabdance.com
   tls:
     enabled: false
     secretName: poll-tls
