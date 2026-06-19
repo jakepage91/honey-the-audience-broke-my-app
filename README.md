@@ -64,8 +64,12 @@ Then deploy:
 ```bash
 helm upgrade --install conference-app helm/conference-app \
   --namespace conference-app \
+  --create-namespace \
+  -f helm/conference-app/values.yaml \
   -f my-secrets.yaml
 ```
+
+> **Important:** Always pass both `-f` flags. Omitting `-f helm/conference-app/values.yaml` causes Helm to fall back to previously stored values, which can reset secrets (e.g. the DB password) to their placeholder defaults and crash the app.
 
 ### Build and Push the Image
 
@@ -120,17 +124,40 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 ### 2. Configure FreeDNS
 
 1. Log in to [freedns.afraid.org](https://freedns.afraid.org/)
-2. Find the `honey-we-have-a-problem.freeddns.org` record
+2. Find the `honey-we-have-a-problem.crabdance.com` record
 3. Set the **A record** to your ingress controller's external IP
 4. Save
 
 ### 3. Verify DNS Propagation
 
 ```bash
-dig honey-we-have-a-problem.freeddns.org
+dig honey-we-have-a-problem.crabdance.com
 ```
 
 FreeDNS typically propagates in **under 5 minutes** since it uses low TTLs for dynamic DNS.
+
+## HTTPS / TLS (Optional)
+
+The chart includes cert-manager support for automatic Let's Encrypt certificates.
+
+### 1. Install cert-manager
+
+```bash
+helm repo add jetstack https://charts.jetstack.io --force-update
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace \
+  --set crds.enabled=true
+```
+
+### 2. Enable TLS in your `my-secrets.yaml`
+
+```yaml
+ingress:
+  tls:
+    enabled: true
+```
+
+Then redeploy with the usual `helm upgrade --install` command. cert-manager will provision the certificate automatically — HTTPS should be live within ~60 seconds.
 
 ## Slack Alerting Setup
 
@@ -163,8 +190,8 @@ This gets picked up automatically when you run `helm upgrade --install ... -f my
 1. Deploy the application to your Kubernetes cluster
 2. Verify everything is working: visit the voting page and results dashboard
 3. Generate two QR codes with [this tool](https://www.qrcode-monkey.com/):
-   - **Left QR:** `http://honey-we-have-a-problem.freeddns.org/` (no referral)
-   - **Right QR:** `http://honey-we-have-a-problem.freeddns.org/?referral=conf-partner-2026` (with referral)
+   - **Left QR:** `http://honey-we-have-a-problem.crabdance.com/` (no referral)
+   - **Right QR:** `http://honey-we-have-a-problem.crabdance.com/?referral=conf-partner-2026` (with referral)
 4. Display QR codes on the projector
 5. Open the results dashboard (`/results`) on the projector
 
@@ -220,9 +247,9 @@ curl -fsSL https://raw.githubusercontent.com/metalbear-co/mirrord/main/scripts/i
 
 ### Connect to the Cluster
 
-**Option 1: VS Code** (recommended for demo)
+**Option 1: VS Code / Cursor** (recommended for demo)
 
-Use the "Python: FastAPI with mirrord" launch configuration — press F5 in VS Code. The `.mirrord/mirrord.json` config is auto-detected.
+Use the `vote-api` launch configuration in the Run & Debug panel (`Cmd+Shift+D`) — press F5. The `mirrord.json` config in the project root is used automatically.
 
 **Option 2: CLI**
 
@@ -271,7 +298,7 @@ The app supports per-conference branding via the `CONFERENCE` environment variab
 ```yaml
 # helm/conference-app/values.yaml
 voteApi:
-  conference: "sreday"  # Options: sreday, kubecon, devopsdays
+  conference: "dwx"  # Options: sreday, kubecon, devopsdays, lisbon, dwx, munich
 ```
 
 This displays the conference logo on the voting and results pages, and a welcome banner for attendees.

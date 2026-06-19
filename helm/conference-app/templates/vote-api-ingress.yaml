@@ -9,6 +9,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "1m"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}

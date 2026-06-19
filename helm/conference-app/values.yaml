@@ -85,6 +85,7 @@ ingress:
   tls:
     enabled: false
     secretName: poll-tls
+    email: "jakep@metalbear.com"  # Used for Let's Encrypt registration
 
 secrets:
   postgresql:
