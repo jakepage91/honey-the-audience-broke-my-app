@@ -6,7 +6,8 @@ export default defineConfig({
   fullyParallel: false,
   reporter: 'list',
   use: {
-    baseURL: 'http://honey-we-have-a-problem.freeddns.org',
+    baseURL: 'https://honey-we-have-a-problem.crabdance.com',
+    ignoreHTTPSErrors: true,
     extraHTTPHeaders: {
       // mirrord steal-mode filter: only requests carrying this header
       // are routed to the local service. See .mirrord/mirrord-e2e.json.
