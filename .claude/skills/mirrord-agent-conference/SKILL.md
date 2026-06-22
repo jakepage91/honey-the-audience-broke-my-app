@@ -38,8 +38,9 @@ to tolerate pre-existing rows in the shared cluster database.
 
 Echo the plan briefly and proceed unless the developer objects.
 
-## Phase 3: Implement
+## Phase 3: Branch, Implement, Commit, Push, Draft PR
 
+- Create a feature branch off `main`.
 - Edit only files under `app/` (excluding `app/referral.py` and `app/static/`).
 - If the feature needs new persistent state, add a SQLAlchemy model to
   `app/models.py` and let `Base.metadata.create_all` pick it up on startup.
@@ -47,7 +48,7 @@ Echo the plan briefly and proceed unless the developer objects.
 - Add new endpoints to `app/main.py` alongside the existing routes.
 - Write or update Playwright e2e tests in `e2e/` following the naming convention
   `e2e/<feature-name>.spec.ts`.
-  - Tests run against `http://honey-we-have-a-problem.freeddns.org` — never
+  - Tests run against `http://honey-we-have-a-problem.crabdance.com` — never
     localhost.
   - Use API-level tests (`request` context), not browser/page tests.
   - Never mock Postgres, Redis, or any other backend.
@@ -56,6 +57,16 @@ Echo the plan briefly and proceed unless the developer objects.
   - For async flows (SSE, Redis pub/sub): use a poll/retry loop (e.g. 15 × 1s)
     — never a fixed `sleep`. Keep total poll budget under ~15s to stay inside
     the 30s default timeout, or call `test.setTimeout(60_000)` explicitly.
+- Commit and push the implementation before validation starts.
+- Open a **draft** PR before validation starts. Update it again after any
+  validation-driven fixes (including screenshots from Playwright).
+
+Capture:
+
+```text
+BRANCH=<branch>
+PR_URL=<url>
+```
 
 ## Phase 4: Start Local Service Under mirrord
 
@@ -76,16 +87,28 @@ it with these settings:
 - `fs.mode: "read"`
 - Env include: `DATABASE_URL;REDIS_URL;POSTGRES_USER;POSTGRES_PASSWORD;POSTGRES_DB;DB_POOL_SIZE;DB_MAX_OVERFLOW;APP_VERSION;CONFERENCE`
 
-Start the service in a background tmux session:
+Start the service in a background tmux session. Check for the tmux portal config
+and fall back to `/dev/null` if absent:
 
 ```bash
 SESSION="vote-api-mirrord"
-tmux kill-session -t "$SESSION" 2>/dev/null || true
-tmux new-session -d -s "$SESSION" -c /workspace/honey-the-audience-broke-my-app \
+TMUX_CONFIG="/exec-daemon/tmux.portal.conf"
+if [ ! -f "$TMUX_CONFIG" ]; then TMUX_CONFIG="/dev/null"; fi
+
+tmux -f "$TMUX_CONFIG" kill-session -t "$SESSION" 2>/dev/null || true
+tmux -f "$TMUX_CONFIG" new-session -d -s "$SESSION" \
+  -c "$(pwd)" \
   "mirrord exec -f .mirrord/mirrord-e2e.json -- \
    ./venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000"
 sleep 3
-tmux capture-pane -pt "$SESSION:0.0" -S -50
+tmux -f "$TMUX_CONFIG" capture-pane -pt "$SESSION:0.0" -S -50
+```
+
+If follow-up input is needed, use the same `-f "$TMUX_CONFIG"` for `send-keys`:
+
+```bash
+tmux -f "$TMUX_CONFIG" send-keys -t "$SESSION:0.0" -l '<command>'
+tmux -f "$TMUX_CONFIG" send-keys -t "$SESSION:0.0" C-m
 ```
 
 ## Phase 5: Sanity-Curl Before Playwright
@@ -95,17 +118,17 @@ Hit the new endpoint once through the real ingress with the baggage header:
 ```bash
 curl -sS \
   -H 'baggage: mirrord=e2e' \
-  http://honey-we-have-a-problem.freeddns.org/<new-path>
+  http://honey-we-have-a-problem.crabdance.com/<new-path>
 ```
 
 This catches schema / routing bugs in one second. Only proceed to Playwright
 once this returns a sensible response.
 
 Also confirm that an unfiltered request does **not** appear in local logs
-(i.e. traffic without the baggage header stays on the cluster):
+(traffic without the baggage header must stay on the cluster):
 
 ```bash
-curl -sS http://honey-we-have-a-problem.freeddns.org/<new-path>
+curl -sS http://honey-we-have-a-problem.crabdance.com/<new-path>
 ```
 
 ## Phase 6: Run Playwright e2e Tests
@@ -114,46 +137,60 @@ curl -sS http://honey-we-have-a-problem.freeddns.org/<new-path>
 cd e2e && npm run test
 ```
 
-Save test output. Review any screenshot assertions with the image-viewing tool —
-a visual mismatch counts as a failure even if Playwright exits 0.
+Save test output. After the final passing run, stage any screenshots for the PR
+body and update the PR with a **Playwright verification** section. Review every
+screenshot with the image-viewing tool — a visual mismatch counts as a failure
+even if Playwright exits 0.
 
-**Do not open a PR until all e2e tests pass.**
+## Phase 7: Internal Iteration
 
-## Phase 7: Confirm With Developer Before Stopping mirrord
+If a functional check fails, a screenshot review fails, or the local service
+fails to start:
+
+1. Diagnose the root cause.
+2. First rule out shared-DB stale-data problems before changing product code.
+3. Fix the code or the test.
+4. Commit and push the iteration fix.
+5. Restart the local mirrord service and rerun validation.
+6. Update the PR after the final passing run.
+
+Internal cap: **3 attempts**. If still failing, report that directly and ask for
+developer input.
+
+## Phase 8: Confirm With Developer Before Stopping mirrord
 
 After tests pass, ask the developer:
 
 > "Tests pass. Do you want to check the new behaviour in your browser before I
-> stop mirrord and open the PR?"
+> stop mirrord and mark the PR ready?"
 
 Leave mirrord running until they confirm. This lets them (or the audience) see
 the real behaviour through steal mode before the PR lands.
 
-## Phase 8: Stop mirrord
+## Phase 9: Stop mirrord
 
 ```bash
-tmux kill-session -t "vote-api-mirrord" 2>/dev/null || true
+TMUX_CONFIG="/exec-daemon/tmux.portal.conf"
+if [ ! -f "$TMUX_CONFIG" ]; then TMUX_CONFIG="/dev/null"; fi
+tmux -f "$TMUX_CONFIG" kill-session -t "vote-api-mirrord" 2>/dev/null || true
 pgrep -af "mirrord exec.*vote-api" || echo "no vote-api mirrord processes"
 ```
 
 Never leave mirrord running after handoff.
 
-## Phase 9: Open PR
+## Phase 10: Mark PR Ready and Report Back
 
-- Summarise the feature and note that e2e tests passed against the live cluster
-  via mirrord.
-- Do not merge automatically.
-- Do not open the PR if `app/referral.py` is in the diff — abort instead.
-
-## Phase 10: Report Back
+Mark the draft PR ready for review. Do not open the PR if `app/referral.py` is
+in the diff — abort instead.
 
 Return one concise report containing:
 
 - One-line change summary
 - Ingress URL and baggage header used for validation
 - PR URL
-- Test pass count
+- Test pass count (and which iteration)
 - Failed checks (if any)
+- Screenshot paths with one-line observations
 - Confirmation that mirrord was stopped
 
 End with the developer choice set:
@@ -171,9 +208,9 @@ End with the developer choice set:
 - Never modify `app/static/` in the same PR as a backend change.
 - Never validate against `localhost` or `127.0.0.1` — always use the ingress.
 - Never skip the Phase 2 test plan.
-- Never open a PR before all e2e tests pass.
 - Never leave mirrord running after handoff.
 - Never merge the PR automatically.
+- Never use `git push --force` or `--no-verify`.
 - Treat visual failures as real failures.
 - SQL assertions must tolerate pre-existing rows in the shared cluster DB.
 
