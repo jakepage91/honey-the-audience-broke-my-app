@@ -34,7 +34,7 @@ Every feature MUST go through this workflow before a PR is opened. No exceptions
 ### Step 3: Generate Playwright e2e tests
 
 - For **every** feature, create or update Playwright e2e tests in `e2e/`.
-- Tests run against the **real ingress**, not localhost: `http://honey-we-have-a-problem.freeddns.org`.
+- Tests run against the **real ingress**, not localhost: `https://honey-we-have-a-problem.crabdance.com`.
 - **Use API-level tests** (Playwright's `request` context), not browser/page tests. The backend runs locally via mirrord; the cluster-served frontend won't reflect your local changes.
 - Tests MUST NOT mock Postgres, Redis, or any other backend — the whole point is testing against real cluster infrastructure.
 - **Async flows (Redis pub/sub, SSE, etc.)**: never use a fixed `sleep` to wait for propagation. Always use a poll/retry loop (e.g., retry up to 10 times with 2-second intervals) checking for the expected state.
@@ -49,7 +49,7 @@ Every feature MUST go through this workflow before a PR is opened. No exceptions
    ```
 2. **Sanity-curl before running Playwright.** Hit the new endpoint once through the real ingress with the baggage header:
    ```
-   curl -H 'baggage: mirrord=e2e' http://honey-we-have-a-problem.freeddns.org/<path>
+   curl -k -H 'baggage: mirrord=e2e' https://honey-we-have-a-problem.crabdance.com/<path>
    ```
    This catches schema / TZ / routing bugs in one second instead of a 30s Playwright timeout. Only run the full suite once this returns a sensible response.
 3. Run Playwright:
@@ -73,7 +73,7 @@ Every feature MUST go through this workflow before a PR is opened. No exceptions
 
 **Framework:** FastAPI (Python 3.12) + SQLAlchemy + Redis
 **Deployment:** Helm chart at `helm/conference-app/`, namespace `conference-app`.
-**Ingress:** `http://honey-we-have-a-problem.freeddns.org` (NGINX + cert-manager).
+**Ingress:** `https://honey-we-have-a-problem.crabdance.com` (NGINX + cert-manager, self-signed cert).
 
 ### App layout
 
