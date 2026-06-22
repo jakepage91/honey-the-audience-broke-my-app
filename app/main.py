@@ -146,6 +146,36 @@ async def get_votes():
     return result
 
 
+@app.get("/votes/pace")
+async def get_votes_pace():
+    with engine.connect() as conn:
+        all_time_rows = conn.execute(
+            text("SELECT choice, COUNT(*) FROM votes GROUP BY choice")
+        ).fetchall()
+        recent_rows = conn.execute(
+            text(
+                "SELECT choice, COUNT(*) FROM votes"
+                " WHERE created_at >= (NOW() AT TIME ZONE 'UTC' - INTERVAL '30 seconds')"
+                " GROUP BY choice"
+            )
+        ).fetchall()
+
+    all_time = {c: 0 for c in VALID_CHOICES}
+    for row in all_time_rows:
+        if row[0] in all_time:
+            all_time[row[0]] = row[1]
+
+    last_30s = {c: 0 for c in VALID_CHOICES}
+    for row in recent_rows:
+        if row[0] in last_30s:
+            last_30s[row[0]] = row[1]
+
+    return {
+        "last_30s": {c: {"count": last_30s[c], "label": CHOICE_LABELS[c]} for c in VALID_CHOICES},
+        "all_time": {c: {"count": all_time[c], "label": CHOICE_LABELS[c]} for c in VALID_CHOICES},
+    }
+
+
 @app.get("/stream")
 async def vote_stream(request: Request):
     async def event_generator():
