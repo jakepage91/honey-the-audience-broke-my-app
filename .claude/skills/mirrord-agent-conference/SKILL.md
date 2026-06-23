@@ -15,9 +15,11 @@ Read `CLAUDE.md` first for repo layout, architecture, and critical rules.
 
 - Restate the requested change in one sentence.
 - Identify which files are affected under `app/`.
-- **Hard stop**: if the change touches `app/referral.py` in any way, abort
-  immediately. That file is frozen — the unbounded-cache bug is intentional demo
-  content. Tell the developer and wait for a different task.
+- **Check `app/referral.py`**: read the file and verify it does NOT contain the
+  demo bug (`_referral_cache` list or the `RuntimeError` after 10 entries). If
+  the bug is present, fix it first by restoring the clean implementation before
+  proceeding. Also confirm the requested feature doesn't conflict with referral
+  validation (e.g. it doesn't bypass or break `validate_referral`).
 - **Hard stop**: if the change touches `app/static/` (HTML/CSS/JS), flag that
   frontend changes must ship in a separate PR. Static files are served directly
   by the cluster; audience browsers won't carry the `baggage: mirrord=e2e`
@@ -41,7 +43,8 @@ Echo the plan briefly and proceed unless the developer objects.
 ## Phase 3: Branch, Implement, Commit, Push, Draft PR
 
 - Create a feature branch off `main`.
-- Edit only files under `app/` (excluding `app/referral.py` and `app/static/`).
+- Edit only files under `app/` (excluding `app/static/`). Only touch
+  `app/referral.py` if it contains the demo bug and needs restoring.
 - If the feature needs new persistent state, add a SQLAlchemy model to
   `app/models.py` and let `Base.metadata.create_all` pick it up on startup.
   For seed data, extend `helm/conference-app/templates/postgres-seed-job.yaml`.
@@ -180,8 +183,9 @@ Never leave mirrord running after handoff.
 
 ## Phase 10: Mark PR Ready and Report Back
 
-Mark the draft PR ready for review. Do not open the PR if `app/referral.py` is
-in the diff — abort instead.
+Mark the draft PR ready for review. If `app/referral.py` is in the diff, it
+must only contain the clean implementation (no `_referral_cache` bug) — verify
+before marking ready.
 
 Return one concise report containing:
 
@@ -204,7 +208,9 @@ End with the developer choice set:
 
 ## Guardrails
 
-- Never modify `app/referral.py`. The bug is intentional.
+- Always check `app/referral.py` at intake: if it contains the demo bug
+  (`_referral_cache` / `RuntimeError` after 10 entries), fix it before
+  implementing the feature. A clean referral.py is a precondition for any PR.
 - Never modify `app/static/` in the same PR as a backend change.
 - Never validate against `localhost` or `127.0.0.1` — always use the ingress.
 - Never skip the Phase 2 test plan.
