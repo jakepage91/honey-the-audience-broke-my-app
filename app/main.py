@@ -30,6 +30,9 @@ VALID_CHOICES = [
     "restart"
 ]
 
+# Rolling window (seconds) used by GET /votes/pace to measure recent vote rate.
+PACE_WINDOW_SECONDS = 30
+
 CHOICE_LABELS = {
     "print": "Add more print statements",
     "stare": "Stare at the code until it confesses",
@@ -144,6 +147,64 @@ async def get_votes():
             "label": CHOICE_LABELS[choice]
         }
     return result
+
+
+@app.get("/votes/pace")
+async def get_votes_pace():
+    """Per-option vote counts for the last PACE_WINDOW_SECONDS alongside all-time totals.
+
+    Both figures come from a single Postgres aggregate so ``recent`` can never
+    exceed ``total``. ``created_at`` is a naive TIMESTAMP written with
+    ``datetime.utcnow()``; ``created_at AT TIME ZONE 'UTC'`` reinterprets it as
+    UTC (timestamptz) so the comparison against ``now()`` is correct regardless
+    of the Postgres server timezone.
+    """
+    try:
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    """
+                    SELECT choice,
+                           COUNT(*) AS total,
+                           COUNT(*) FILTER (
+                               WHERE created_at AT TIME ZONE 'UTC'
+                                     >= now() - make_interval(secs => :window)
+                           ) AS recent
+                    FROM votes
+                    GROUP BY choice
+                    """
+                ),
+                {"window": PACE_WINDOW_SECONDS},
+            ).all()
+
+        update_pool_metrics()
+
+        by_choice = {row.choice: row for row in rows}
+        options = {}
+        for choice in VALID_CHOICES:
+            row = by_choice.get(choice)
+            options[choice] = {
+                "label": CHOICE_LABELS[choice],
+                "recent": int(row.recent) if row else 0,
+                "total": int(row.total) if row else 0,
+            }
+
+        return {"window_seconds": PACE_WINDOW_SECONDS, "options": options}
+
+    except PoolTimeoutError:
+        db_pool_timeout_total.inc()
+        update_pool_metrics()
+        raise HTTPException(
+            status_code=503,
+            detail="Database connection pool exhausted. All connections are in use - this is caused by a connection leak bug."
+        )
+    except OperationalError:
+        db_pool_timeout_total.inc()
+        update_pool_metrics()
+        raise HTTPException(
+            status_code=503,
+            detail="Database query failed. This often precedes connection pool exhaustion due to a connection leak bug."
+        )
 
 
 @app.get("/stream")
