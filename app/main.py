@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy import text
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError, OperationalError
+from sqlalchemy.sql import func
 
 from app.database import Base, engine
 from app.metrics import MetricsMiddleware, db_pool_checked_out, db_pool_size, db_pool_timeout_total, get_metrics_response, referral_cache_exhausted_total
@@ -144,6 +145,32 @@ async def get_votes():
             "label": CHOICE_LABELS[choice]
         }
     return result
+
+
+@app.get("/votes/pace")
+async def get_votes_pace():
+    pace_sql = text("""
+        SELECT
+            choice,
+            COUNT(*) FILTER (
+                WHERE (created_at AT TIME ZONE 'UTC') >= (now() AT TIME ZONE 'UTC' - INTERVAL '30 seconds')
+            ) AS recent,
+            COUNT(*) AS total
+        FROM votes
+        GROUP BY choice
+    """)
+    with engine.connect() as conn:
+        rows = conn.execute(pace_sql).fetchall()
+
+    by_choice = {row.choice: {"recent": int(row.recent), "total": int(row.total)} for row in rows}
+
+    recent_30s = {}
+    all_time = {}
+    for choice in VALID_CHOICES:
+        recent_30s[choice] = by_choice.get(choice, {}).get("recent", 0)
+        all_time[choice] = by_choice.get(choice, {}).get("total", 0)
+
+    return {"recent_30s": recent_30s, "all_time": all_time}
 
 
 @app.get("/stream")
