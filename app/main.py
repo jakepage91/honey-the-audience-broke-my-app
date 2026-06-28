@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 from sqlalchemy import text
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError, OperationalError
-from sqlalchemy.sql import func
 
 from app.database import Base, engine
 from app.metrics import MetricsMiddleware, db_pool_checked_out, db_pool_size, db_pool_timeout_total, get_metrics_response, referral_cache_exhausted_total
@@ -153,7 +152,7 @@ async def get_votes_pace():
         SELECT
             choice,
             COUNT(*) FILTER (
-                WHERE (created_at AT TIME ZONE 'UTC') >= (now() AT TIME ZONE 'UTC' - INTERVAL '30 seconds')
+                WHERE (created_at AT TIME ZONE 'UTC') >= (now() - INTERVAL '30 seconds')
             ) AS recent,
             COUNT(*) AS total
         FROM votes
