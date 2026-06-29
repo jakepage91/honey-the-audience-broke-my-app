@@ -8,12 +8,9 @@
   "feature": {
     "network": {
       "incoming": {
-        "mode": {
-          "steal": {
-            "filter": {
-              "header_filter": "baggage:\\s*[^\\n]*\\bmirrord=e2e\\b"
-            }
-          }
+        "mode": "steal",
+        "http_filter": {
+          "header_filter": "baggage:\\s*[^\\n]*\\bmirrord=e2e\\b"
         }
       },
       "outgoing": true,
